@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Mensalidades - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            display: flex;
+            min-height: 100vh;
+            background-color: #f8f9fa;
+        }
+        #sidebar {
+            width: 250px;
+            background-color: #343a40;
+            color: white;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        #sidebar .nav-link {
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        #sidebar .nav-link.active {
+            background-color: #007bff;
+        }
+        #sidebar .nav-link:hover {
+            background-color: #495057;
+        }
+        #main-content {
+            flex-grow: 1;
+            padding: 20px;
+        }
+        .navbar {
+            background-color: #ffffff;
+            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 20px;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #343a40 !important;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #e9ecef;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .form-group label { font-weight: bold; }
+        .table thead th { background-color: #f8f9fa; }
+        .table tbody tr.table-danger { background-color: #f8d7da; } /* Estilo para linhas atrasadas */
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <h3 class="text-center mb-4">Sistema Escolar</h3>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="crud_alunos.html"><i class="fas fa-user-graduate me-2"></i> Alunos</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="crud_turmas.html"><i class="fas fa-chalkboard me-2"></i> Turmas</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="crud_mensalidades.html"><i class="fas fa-dollar-sign me-2"></i> Mensalidades</a>
+            </li>
+             <li class="nav-item mt-auto"> <a class="nav-link" href="#" id="logoutBtn"><i class="fas fa-sign-out-alt me-2"></i> Sair</a>
+            </li>
+        </ul>
+    </div>
+
+    <div id="main-content">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">Dashboard de Administrador</a>
+                <span class="navbar-text ms-auto" id="loggedInUser"></span>
+            </div>
+        </nav>
+
+        <h2 class="mb-4">Gerenciamento de Mensalidades</h2>
+
+        <ul class="nav nav-tabs mb-4" id="mensalidadesTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="list-tab" data-bs-toggle="tab" href="#list" role="tab" aria-controls="list" aria-selected="true">Listar Mensalidades</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="create-tab" data-bs-toggle="tab" href="#create" role="tab" aria-controls="create" aria-selected="false">Criar Mensalidade</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="overdue-tab" data-bs-toggle="tab" href="#overdue" role="tab" aria-controls="overdue" aria-selected="false">Mensalidades em Atraso</a>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="mensalidadesTabContent">
+            <div class="tab-pane fade show active" id="list" role="tabpanel" aria-labelledby="list-tab">
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h4>Todas as Mensalidades</h4>
+                        <button class="btn btn-primary btn-sm" onclick="fetchMensalidades()"><i class="fas fa-sync-alt"></i> Atualizar Lista</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="filterAluno" class="form-label">Filtrar por Aluno:</label>
+                                <select id="filterAluno" class="form-select" onchange="fetchMensalidades()">
+                                    <option value="">Todos os Alunos</option>
+                                    </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="filterStatus" class="form-label">Filtrar por Status:</label>
+                                <select id="filterStatus" class="form-select" onchange="fetchMensalidades()">
+                                    <option value="">Todos</option>
+                                    <option value="pendente">Pendente</option>
+                                    <option value="pago">Paga</option>
+                                    <option value="atrasado">Atrasada</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="filterDataInicio" class="form-label">Data Início:</label>
+                                <input type="date" id="filterDataInicio" class="form-control" onchange="fetchMensalidades()">
+                            </div>
+                            <div class="col-md-2">
+                                <label for="filterDataFim" class="form-label">Data Fim:</label>
+                                <input type="date" id="filterDataFim" class="form-control" onchange="fetchMensalidades()">
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Aluno</th>
+                                        <th>RA</th>
+                                        <th>Valor Base</th>
+                                        <th>Vencimento</th>
+                                        <th>Pagamento</th>
+                                        <th>Status</th>
+                                        <th>Multa (%)</th>
+                                        <th>Valor Multa</th>
+                                        <th>Total a Pagar</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="mensalidadesTableBody">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="create" role="tabpanel" aria-labelledby="create-tab">
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h4>Criar Nova Mensalidade</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="createMensalidadeForm">
+                            <div class="mb-3">
+                                <label for="newAlunoId" class="form-label">Aluno:</label>
+                                <select id="newAlunoId" class="form-select" required>
+                                    <option value="">Selecione um Aluno</option>
+                                    </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="newValorMensalidade" class="form-label">Valor da Mensalidade:</label>
+                                <input type="number" step="0.01" id="newValorMensalidade" class="form-control" placeholder="Ex: 850.00" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="newDataVencimento" class="form-label">Data de Vencimento:</label>
+                                <input type="date" id="newDataVencimento" class="form-control" required>
+                            </div>
+                            <button type="submit" class="btn btn-success"><i class="fas fa-plus-circle"></i> Criar Mensalidade</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="overdue" role="tabpanel" aria-labelledby="overdue-tab">
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h4>Mensalidades em Atraso</h4>
+                        <button class="btn btn-primary btn-sm" onclick="fetchOverdueMensalidades()"><i class="fas fa-sync-alt"></i> Atualizar Atrasos</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="filterOverdueAluno" class="form-label">Filtrar por Aluno:</label>
+                                <select id="filterOverdueAluno" class="form-select" onchange="fetchOverdueMensalidades()">
+                                    <option value="">Todos os Alunos</option>
+                                    </select>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Aluno</th>
+                                        <th>RA</th>
+                                        <th>Valor Base</th>
+                                        <th>Vencimento</th>
+                                        <th>Dias Atraso</th>
+                                        <th>Multa (%)</th>
+                                        <th>Valor Multa</th>
+                                        <th>Total a Pagar</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="overdueMensalidadesTableBody">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="markAsPaidModal" tabindex="-1" aria-labelledby="markAsPaidModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="markAsPaidModalLabel">Confirmar Pagamento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Você está prestes a marcar a mensalidade ID: <strong id="modalMensalidadeId"></strong> do aluno <strong id="modalMensalidadeAluno"></strong> como paga.</p>
+                    <p>Valor Base: R$ <span id="modalValorBase"></span></p>
+                    <p>Multa Calculada: R$ <span id="modalMultaCalculada"></span> (<span id="modalPercentualMulta"></span>%)</p>
+                    <p>Total a Pagar: R$ <span id="modalTotalPagar"></span></p>
+                    <div class="mb-3">
+                        <label for="modalDataPagamento" class="form-label">Data do Pagamento:</label>
+                        <input type="date" id="modalDataPagamento" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modalValorPago" class="form-label">Valor Efetivamente Pago:</label>
+                        <input type="number" step="0.01" id="modalValorPago" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" id="confirmPaymentBtn">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script src="js/AuthService.js"></script>
+    <script src="js/redirect.js"></script>
+    <script>
+        // Defina a URL base da sua API
+        const API_BASE_URL = window.location.origin + '/Sistema/api'; // Ajuste conforme seu basePath no index.php
+        let currentMensalidadeToPay = null; // Armazena a mensalidade que será marcada como paga
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAdminPermissions(); // Verifica se o usuário é admin/professor
+            displayUserName(); // Exibe o nome de usuário logado
+            loadAllStudents(); // Carrega alunos para os filtros e formulários
+            fetchMensalidades(); // Carrega a lista inicial de mensalidades
+
+            document.getElementById('createMensalidadeForm').addEventListener('submit', handleCreateMensalidade);
+            document.getElementById('confirmPaymentBtn').addEventListener('click', handleConfirmPayment);
+            document.getElementById('logoutBtn').addEventListener('click', AuthService.logout);
+
+            // Ativar abas do Bootstrap 5
+            var triggerTabList = [].slice.call(document.querySelectorAll('#mensalidadesTab a'));
+            triggerTabList.forEach(function (triggerEl) {
+                var tabTrigger = new bootstrap.Tab(triggerEl);
+                triggerEl.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    tabTrigger.show();
+                });
+            });
+        });
+
+        async function checkAdminPermissions() {
+            const user = AuthService.getLoggedInUser();
+            if (!user || (user.role !== 'admin' && user.role !== 'professor')) {
+                alert('Acesso negado. Você não tem permissão para acessar esta página.');
+                AuthService.logout(); // Redireciona para o login
+                return;
+            }
+        }
+
+        function displayUserName() {
+            const user = AuthService.getLoggedInUser();
+            if (user && user.username) {
+                document.getElementById('loggedInUser').textContent = `Bem-vindo(a), ${user.username} (${user.role})`;
+            }
+        }
+
+        async function fetchData(endpoint, method = 'GET', data = null) {
+            const token = AuthService.getToken();
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            const options = {
+                method: method,
+                headers: headers,
+            };
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+                if (!response.ok) {
+                    if (response.status === 401 || response.status === 403) {
+                        alert('Sessão expirada ou acesso não autorizado. Por favor, faça login novamente.');
+                        AuthService.logout(); // Usa o serviço de autenticação para logout e redirecionamento
+                    }
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `Erro na requisição: ${response.statusText}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                alert(error.message);
+                return null;
+            }
+        }
+
+        async function loadAllStudents() {
+            const studentsDropdown = document.getElementById('filterAluno');
+            const newAlunoDropdown = document.getElementById('newAlunoId');
+            const overdueAlunoDropdown = document.getElementById('filterOverdueAluno');
+
+            // Limpa opções antigas
+            studentsDropdown.innerHTML = '<option value="">Todos os Alunos</option>';
+            newAlunoDropdown.innerHTML = '<option value="">Selecione um Aluno</option>';
+            overdueAlunoDropdown.innerHTML = '<option value="">Todos os Alunos</option>';
+
+            const response = await fetchData('/alunos');
+            if (response && response.success) {
+                response.data.forEach(aluno => {
+                    const option1 = document.createElement('option');
+                    option1.value = aluno.id_aluno;
+                    option1.textContent = `${aluno.nome_aluno} (RA: ${aluno.ra})`;
+                    studentsDropdown.appendChild(option1);
+
+                    const option2 = document.createElement('option');
+                    option2.value = aluno.id_aluno;
+                    option2.textContent = `${aluno.nome_aluno} (RA: ${aluno.ra})`;
+                    newAlunoDropdown.appendChild(option2);
+
+                    const option3 = document.createElement('option');
+                    option3.value = aluno.id_aluno;
+                    option3.textContent = `${aluno.nome_aluno} (RA: ${aluno.ra})`;
+                    overdueAlunoDropdown.appendChild(option3);
+                });
+            }
+        }
+
+        async function fetchMensalidades() {
+            const tbody = document.getElementById('mensalidadesTableBody');
+            tbody.innerHTML = '<tr><td colspan="11" class="text-center">Carregando mensalidades...</td></tr>';
+
+            const filterAlunoId = document.getElementById('filterAluno').value;
+            const filterStatus = document.getElementById('filterStatus').value;
+            const filterDataInicio = document.getElementById('filterDataInicio').value;
+            const filterDataFim = document.getElementById('filterDataFim').value;
+
+            const params = new URLSearchParams();
+            if (filterAlunoId) params.append('id_aluno', filterAlunoId);
+            if (filterStatus) params.append('status', filterStatus);
+            if (filterDataInicio) params.append('data_inicio', filterDataInicio);
+            if (filterDataFim) params.append('data_fim', filterDataFim);
+
+            const queryString = params.toString() ? `?${params.toString()}` : '';
+            const response = await fetchData(`/mensalidades${queryString}`);
+
+            if (response && response.success) {
+                tbody.innerHTML = ''; // Limpa antes de adicionar
+                if (response.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="11" class="text-center">Nenhuma mensalidade encontrada.</td></tr>';
+                    return;
+                }
+                response.data.forEach(mensalidade => {
+                    const row = tbody.insertRow();
+                    if (mensalidade.status === 'atrasado') {
+                        row.classList.add('table-danger'); // Adiciona classe para destaque de atraso
+                    }
+                    row.innerHTML = `
+                        <td>${mensalidade.id_mensalidade}</td>
+                        <td>${mensalidade.nome_aluno}</td>
+                        <td>${mensalidade.ra}</td>
+                        <td>R$ ${parseFloat(mensalidade.valor_mensalidade).toFixed(2)}</td>
+                        <td>${mensalidade.data_vencimento}</td>
+                        <td>${mensalidade.data_pagamento || 'N/A'}</td>
+                        <td>${mensalidade.status}</td>
+                        <td>${parseFloat(mensalidade.percentual_multa).toFixed(2)}%</td>
+                        <td>R$ ${parseFloat(mensalidade.multa_aplicada).toFixed(2)}</td>
+                        <td>R$ ${parseFloat(mensalidade.total_a_pagar).toFixed(2)}</td>
+                        <td>
+                            ${mensalidade.status !== 'pago' ?
+                                `<button class="btn btn-sm btn-success" onclick="prepareMarkAsPaid(${mensalidade.id_mensalidade}, '${mensalidade.nome_aluno}', ${mensalidade.valor_mensalidade}, ${mensalidade.multa_aplicada}, ${mensalidade.percentual_multa}, ${mensalidade.total_a_pagar})" data-bs-toggle="modal" data-bs-target="#markAsPaidModal"><i class="fas fa-check-circle"></i> Pagar</button>` :
+                                `<button class="btn btn-sm btn-info" disabled><i class="fas fa-check"></i> Paga</button>`
+                            }
+                        </td>
+                    `;
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="11" class="text-center text-danger">Erro ao carregar mensalidades.</td></tr>';
+            }
+        }
+
+        async function fetchOverdueMensalidades() {
+            const tbody = document.getElementById('overdueMensalidadesTableBody');
+            tbody.innerHTML = '<tr><td colspan="10" class="text-center">Carregando mensalidades em atraso...</td></tr>';
+
+            const filterAlunoId = document.getElementById('filterOverdueAluno').value;
+            const params = new URLSearchParams();
+            if (filterAlunoId) params.append('id_aluno', filterAlunoId);
+            const queryString = params.toString() ? `?${params.toString()}` : '';
+
+            const response = await fetchData(`/mensalidades/atraso${queryString}`);
+
+            if (response && response.success) {
+                tbody.innerHTML = '';
+                if (response.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="10" class="text-center">Nenhuma mensalidade em atraso encontrada.</td></tr>';
+                    return;
+                }
+                response.data.forEach(mensalidade => {
+                    const row = tbody.insertRow();
+                    row.classList.add('table-danger'); // Sempre destaque para atraso
+                    row.innerHTML = `
+                        <td>${mensalidade.id_mensalidade}</td>
+                        <td>${mensalidade.nome_aluno}</td>
+                        <td>${mensalidade.ra}</td>
+                        <td>R$ ${parseFloat(mensalidade.valor_mensalidade).toFixed(2)}</td>
+                        <td>${mensalidade.data_vencimento}</td>
+                        <td>${mensalidade.dias_atraso}</td>
+                        <td>${parseFloat(mensalidade.percentual_multa).toFixed(2)}%</td>
+                        <td>R$ ${parseFloat(mensalidade.multa_aplicada).toFixed(2)}</td>
+                        <td>R$ ${parseFloat(mensalidade.total_a_pagar).toFixed(2)}</td>
+                        <td>
+                            <button class="btn btn-sm btn-success" onclick="prepareMarkAsPaid(${mensalidade.id_mensalidade}, '${mensalidade.nome_aluno}', ${mensalidade.valor_mensalidade}, ${mensalidade.multa_aplicada}, ${mensalidade.percentual_multa}, ${mensalidade.total_a_pagar})" data-bs-toggle="modal" data-bs-target="#markAsPaidModal"><i class="fas fa-check-circle"></i> Pagar</button>
+                        </td>
+                    `;
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="10" class="text-center text-danger">Erro ao carregar mensalidades em atraso.</td></tr>';
+            }
+        }
+
+
+        async function handleCreateMensalidade(event) {
+            event.preventDefault();
+            const alunoId = document.getElementById('newAlunoId').value;
+            const valorMensalidade = document.getElementById('newValorMensalidade').value;
+            const dataVencimento = document.getElementById('newDataVencimento').value;
+
+            if (!alunoId || !valorMensalidade || !dataVencimento) {
+                alert('Por favor, preencha todos os campos para criar a mensalidade.');
+                return;
+            }
+
+            const data = {
+                id_aluno: parseInt(alunoId),
+                valor_mensalidade: parseFloat(valorMensalidade),
+                data_vencimento: dataVencimento
+            };
+
+            const response = await fetchData('/mensalidades', 'POST', data);
+            if (response && response.success) {
+                alert('Mensalidade criada com sucesso!');
+                document.getElementById('createMensalidadeForm').reset();
+                fetchMensalidades(); // Atualiza a lista após a criação
+                // Força a aba de listagem a ser mostrada usando Bootstrap 5 JS
+                var someTabTriggerEl = document.querySelector('#list-tab');
+                var tab = new bootstrap.Tab(someTabTriggerEl);
+                tab.show();
+            } else {
+                alert('Erro ao criar mensalidade: ' + (response ? response.message : ''));
+            }
+        }
+
+        function prepareMarkAsPaid(id, alunoNome, valorBase, multaCalculada, percentualMulta, totalPagar) {
+            currentMensalidadeToPay = { id, alunoNome, valorBase, multaCalculada, percentualMulta, totalPagar };
+
+            document.getElementById('modalMensalidadeId').textContent = id;
+            document.getElementById('modalMensalidadeAluno').textContent = alunoNome;
+            document.getElementById('modalValorBase').textContent = parseFloat(valorBase).toFixed(2);
+            document.getElementById('modalMultaCalculada').textContent = parseFloat(multaCalculada).toFixed(2);
+            document.getElementById('modalPercentualMulta').textContent = parseFloat(percentualMulta).toFixed(2);
+            document.getElementById('modalTotalPagar').textContent = parseFloat(totalPagar).toFixed(2);
+
+            // Preenche a data de pagamento padrão com a data atual e o valor pago com o total a pagar
+            document.getElementById('modalDataPagamento').valueAsDate = new Date();
+            document.getElementById('modalValorPago').value = parseFloat(totalPagar).toFixed(2);
+
+            // O modal é aberto via data-bs-toggle no botão, então não precisamos de JQuery aqui.
+        }
+
+        async function handleConfirmPayment() {
+            if (!currentMensalidadeToPay) return;
+
+            const dataPagamento = document.getElementById('modalDataPagamento').value;
+            const valorPago = document.getElementById('modalValorPago').value;
+
+            if (!dataPagamento || !valorPago) {
+                alert('Por favor, preencha a data e o valor pago.');
+                return;
+            }
+
+            const data = {
+                data_pagamento: dataPagamento,
+                valor_pago: parseFloat(valorPago)
+            };
+
+            const response = await fetchData(`/mensalidades/${currentMensalidadeToPay.id}`, 'PUT', data);
+
+            if (response && response.success) {
+                alert('Mensalidade marcada como paga com sucesso!');
+                // Fecha o modal usando Bootstrap 5 JS
+                var myModalEl = document.getElementById('markAsPaidModal');
+                var modal = bootstrap.Modal.getInstance(myModalEl); // Retorna a instância do modal Bootstrap
+                if (modal) {
+                    modal.hide();
+                } else {
+                    // Se a instância não for encontrada (modal não foi aberto via JS), tenta criar uma nova e esconder
+                    var newModal = new bootstrap.Modal(myModalEl);
+                    newModal.hide();
+                }
+                
+                fetchMensalidades(); // Atualiza a lista principal
+                fetchOverdueMensalidades(); // Atualiza a lista de atrasos, caso a mensalidade estivesse lá
+            } else {
+                alert('Erro ao marcar mensalidade como paga: ' + (response ? response.message : ''));
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard do Aluno - Sistema Crescer</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            flex-grow: 1; /* Permite que o container cresça e ocupe o espaço disponível */
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .btn-primary {
+            background-color: #4f46e5;
+            color: #ffffff;
+        }
+        .btn-primary:hover {
+            background-color: #4338ca;
+        }
+        .message {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        .message.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar (simplificada para o aluno) -->
+    <nav class="bg-gray-800 p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center max-w-full">
+            <a href="#" class="text-black text-2xl font-bold">Sistema Crescer</a>
+            <div>
+                <button onclick="logout()" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">Sair</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container flex flex-col items-center justify-center text-center">
+        <div id="loading-message" class="text-gray-600 text-lg mb-4">Carregando seus dados...</div>
+        <div id="error-message" class="message error hidden"></div>
+
+        <h1 id="welcome-message" class="text-4xl font-bold text-gray-800 mb-4 hidden"></h1>
+        <p id="turma-info" class="text-xl text-gray-700 mb-8 hidden"></p>
+
+        <p class="text-gray-500 text-sm">Bem-vindo ao seu painel de aluno.</p>
+    </div>
+
+    <script>
+        // A API_BASE_URL_ALUNOS agora aponta para a raiz do Sistema, onde o index.php está
+        const API_BASE_URL_ALUNOS = 'http://localhost/Sistema/api/alunos'; 
+        // URL da página de login, relativa à pasta 'public'
+        const API_LOGIN_URL = 'login.html'; 
+
+        // Função de Logout
+        function logout() {
+            localStorage.removeItem('jwt_token');
+            localStorage.removeItem('user_role');
+            window.location.href = API_LOGIN_URL;
+        }
+
+        // Função para exibir mensagens de erro
+        function displayError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+            document.getElementById('loading-message').classList.add('hidden');
+        }
+
+        // Função para carregar os dados do aluno
+        async function fetchAlunoData() {
+            const token = localStorage.getItem('jwt_token');
+            const userRole = localStorage.getItem('user_role');
+
+            // Decodificar o token para obter o RA (username)
+            let decodedToken = null;
+            if (token) {
+                try {
+                    const base64Url = token.split('.')[1];
+                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                    decodedToken = JSON.parse(window.atob(base64));
+                } catch (e) {
+                    console.error("Erro ao decodificar token JWT no frontend:", e);
+                    displayError("Token de autenticação inválido. Por favor, faça login novamente.");
+                    logout();
+                    return;
+                }
+            }
+
+            if (!token || userRole !== 'aluno' || !decodedToken || !decodedToken.data || !decodedToken.data.username) {
+                displayError("Acesso negado. Por favor, faça login como aluno.");
+                logout();
+                return;
+            }
+
+            const alunoRA = decodedToken.data.username;
+
+            try {
+                // Envia o RA como parâmetro de busca para obter os dados do aluno
+                const response = await fetch(`${API_BASE_URL_ALUNOS}?ra=${alunoRA}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                // Se a resposta for 401 ou 403, redireciona para o login
+                if (response.status === 401 || response.status === 403) {
+                    displayError("Sessão expirada ou acesso não autorizado. Por favor, faça login novamente.");
+                    logout();
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (data.success && data.data && data.data.length > 0) {
+                    const aluno = data.data[0]; // Pega o primeiro aluno encontrado com esse RA
+                    document.getElementById('welcome-message').textContent = `Olá, ${aluno.nome_aluno}!`;
+                    document.getElementById('turma-info').textContent = `Você está na sala: ${aluno.nome_turma || 'N/A'}`;
+                    
+                    document.getElementById('welcome-message').classList.remove('hidden');
+                    document.getElementById('turma-info').classList.remove('hidden');
+                    document.getElementById('loading-message').classList.add('hidden');
+                } else {
+                    displayError(data.message || "Não foi possível carregar seus dados de aluno.");
+                    console.error("Erro na API ao buscar dados do aluno:", data.message);
+                }
+            } catch (error) {
+                console.error('Erro de conexão ao buscar dados do aluno:', error);
+                displayError('Erro de conexão com o servidor. Por favor, tente novamente.');
+            }
+        }
+
+        // Carrega os dados do aluno ao carregar a página
+        document.addEventListener('DOMContentLoaded', fetchAlunoData);
+    </script>
+</body>
+</html>
