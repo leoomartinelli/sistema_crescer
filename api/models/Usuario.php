@@ -74,7 +74,7 @@ class Usuario {
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":username", $username);
 
-        if ($stmt->execute()) {
+         if ($stmt->execute()) {
             return true;
         }
         error_log("Erro ao deletar usuário: " . implode(" ", $stmt->errorInfo()));

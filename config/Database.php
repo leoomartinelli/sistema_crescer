@@ -2,9 +2,9 @@
 // config/Database.php
 class Database {
     private $host = "localhost";
-    private $db_name = "Sistema_Crescer"; // Nome do banco de dados
-    private $username = "root"; // Seu usuário do banco de dados
-    private $password = ""; // Sua senha do banco de dados
+    private $db_name = "sistema_crescer3"; // Nome do banco de dados
+    private $username = "martinelli"; // Seu usuário do banco de dados
+    private $password = "@Leodan1"; // Sua senha do banco de dados
     public $conn;
 
     public function getConnection() {

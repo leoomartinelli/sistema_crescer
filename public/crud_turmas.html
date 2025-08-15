@@ -7,6 +7,8 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/loader.css">
+    <script src="js/loader.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -175,12 +177,15 @@
 <body>
     <!-- Navbar -->
     <nav class="bg-gray-800 p-4 shadow-md">
-        <div class="container mx-auto flex justify-between items-center">
+        <div class="container mx-auto flex justify-between items-center max-w-full px-4">
             <a href="#" class="text-black text-2xl font-bold">Sistema Crescer</a>
             <div>
-                <!-- Links atualizados para a pasta 'public' -->
                 <a href="crud_alunos.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">Alunos</a>
-                <a href="crud_turmas.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">Turmas</a>
+                <a href="crud_turmas.html" class="bg-gray-900 text-white px-3 py-2 rounded-md text-base font-medium" aria-current="page">Turmas</a>
+                <a href="crud_professores.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">Professores</a>
+                <a href="crud_disciplinas.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">Disciplinas</a>
+                <a href="crud_mensalidades.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">Mensalidades</a>
+                <a href="crud_consultar_cpf.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md">Consulta CPF</a>
                 <button onclick="logout()" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">Sair</button>
             </div>
         </div>
@@ -315,6 +320,10 @@
         </div>
     </div>
 
+    <div id="global-loader" class="loader-overlay">
+        <div class="spinner"></div>
+    </div>
+
     <script>
         // Configuração da URL base da sua API
         const API_BASE_URL_ALUNOS = 'http://localhost/Sistema/api/alunos'; 
@@ -392,6 +401,7 @@
 
         // Carrega todas as turmas e preenche a tabela
         async function fetchTurmas() {
+            showLoader();
             try {
                 const response = await fetch(API_BASE_URL_TURMAS, {
                     headers: {
@@ -431,11 +441,14 @@
             } catch (error) {
                 console.error('Erro ao buscar turmas:', error);
                 displayMessage('Erro de conexão ao buscar turmas.', 'error');
+            } finally {
+                hideLoader(); // ESCONDE O LOADER
             }
         }
 
         // Preenche o formulário do MODAL para edição de Turma
         async function editTurma(id) {
+            showLoader();
             try {
                 const response = await fetch(`${API_BASE_URL_TURMAS}/${id}`, {
                     headers: {
@@ -466,11 +479,14 @@
             } catch (error) {
                 console.error('Erro ao buscar turma para edição:', error);
                 displayMessage('Erro de conexão ao buscar turma para edição.', 'error');
+            } finally {
+                hideLoader(); // ESCONDE O LOADER
             }
         }
 
         // Envia o formulário de ADIÇÃO de Turma
         addTurmaForm.addEventListener('submit', async (event) => {
+            showLoader();
             event.preventDefault();
 
             const formData = new FormData(addTurmaForm);
@@ -509,11 +525,14 @@
             } catch (error) {
                 console.error('Erro ao adicionar turma:', error);
                 displayMessage('Erro de conexão ao adicionar turma.', 'error');
+            } finally {
+                hideLoader(); // ESCONDE O LOADER
             }
         });
 
         // Envia o formulário do MODAL (EDIÇÃO de Turma)
         editTurmaForm.addEventListener('submit', async (event) => {
+            showLoader();
             event.preventDefault();
 
             const id = editTurmaIdInput.value;
@@ -556,11 +575,14 @@
             } catch (error) {
                 console.error('Erro ao salvar turma:', error);
                 displayMessage('Erro de conexão ao salvar turma.', 'error');
+            } finally {
+                hideLoader(); // ESCONDE O LOADER
             }
         });
 
         // Deleta uma turma
         async function deleteTurma(id) {
+            showLoader();
             if (!confirm('Tem certeza que deseja excluir esta turma? Isso pode afetar alunos associados.')) {
                 return;
             }
@@ -589,11 +611,14 @@
             } catch (error) {
                 console.error('Erro ao deletar turma:', error);
                 displayMessage('Erro de conexão ao deletar turma.', 'error');
+            } finally {
+                hideLoader(); // ESCONDE O LOADER
             }
         }
 
         // Função para consultar e exibir alunos de uma turma
         async function consultarAlunos(idTurma, nomeTurma) {
+            showLoader();
             alunosTurmaNomeSpan.textContent = nomeTurma; // Define o nome da turma no título do modal
             alunosByTurmaTableBody.innerHTML = ''; // Limpa a tabela de alunos antes de carregar
             alunosByTurmaMessageArea.classList.add('hidden'); // Esconde mensagens anteriores
@@ -639,6 +664,8 @@
             } catch (error) {
                 console.error('Erro ao consultar alunos por turma:', error);
                 displayMessage('Erro de conexão ao consultar alunos da turma.', 'error', alunosByTurmaMessageArea);
+            } finally {
+                hideLoader(); // ESCONDE O LOADER
             }
         }
 

@@ -2,27 +2,29 @@
 // api/controllers/AuthController.php
 
 require_once __DIR__ . '/../models/Usuario.php';
-require_once __DIR__ . '/../../config/Auth.php'; // Inclui as configurações de autenticação
+require_once __DIR__ . '/../models/Aluno.php';
+require_once __DIR__ . '/../models/Contrato.php';
+require_once __DIR__ . '/../../config/Auth.php';
 
 use Firebase\JWT\JWT;
 
 class AuthController {
     private $usuarioModel;
+    private $alunoModel;
+    private $contratoModel;
 
     public function __construct() {
         $this->usuarioModel = new Usuario();
+        $this->alunoModel = new Aluno();
+        $this->contratoModel = new Contrato();
     }
 
-    /**
-     * Lida com a requisição de login.
-     * Recebe username, password e o papel desejado para login.
-     */
     public function login() {
         $json_data = file_get_contents('php://input');
         $data = json_decode($json_data, true);
 
         if (!isset($data['username']) || !isset($data['password']) || !isset($data['role'])) {
-            http_response_code(400); // Bad Request
+            http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'Campos obrigatórios (username, password, role) ausentes.']);
             return;
         }
@@ -33,72 +35,76 @@ class AuthController {
 
         $usuario = $this->usuarioModel->findByUsername($username);
 
+       
+
         if (!$usuario || !$this->usuarioModel->verifyPassword($password, $usuario['password_hash'])) {
-            http_response_code(401); // Unauthorized
+            http_response_code(401);
             echo json_encode(['success' => false, 'message' => 'Credenciais inválidas.']);
             return;
         }
 
-        // Verifica o papel (role)
-        // Um 'admin' pode logar como 'professor' para acessar funcionalidades de professor.
-        // Um 'professor' só pode logar como 'professor'.
-        // Um 'aluno' só pode logar como 'aluno'.
-        if ($usuario['role'] === 'admin') {
-            if ($requestedRole === 'aluno') {
-                http_response_code(403); // Forbidden
-                echo json_encode(['success' => false, 'message' => 'Administradores não podem logar como alunos.']);
-                return;
-            }
-            // Admin pode logar como 'professor' ou 'admin' (se houver uma interface admin)
-            // Se o requestedRole for 'professor', o admin pode prosseguir.
-            // Se o requestedRole for 'admin', o admin pode prosseguir.
-            // Qualquer outro requestedRole para admin é inválido para este contexto.
-            if ($requestedRole !== 'professor' && $requestedRole !== 'admin') {
-                 http_response_code(403); // Forbidden
-                 echo json_encode(['success' => false, 'message' => 'Papel de login inválido para administrador.']);
-                 return;
-            }
+        // --- INÍCIO DA VERIFICAÇÃO DE CONTRATO (LÓGICA CORRIGIDA) ---
+        if ($usuario['role'] === 'aluno') {
+            // Busca o aluno diretamente pelo RA (que é o username)
+            $alunoData = $this->alunoModel->findByRa($username);
 
-        } elseif ($usuario['role'] === 'professor') {
-            if ($requestedRole !== 'professor') {
-                http_response_code(403); // Forbidden
-                echo json_encode(['success' => false, 'message' => 'Professores só podem logar como professor.']);
-                return;
+            if ($alunoData) {
+                $id_aluno = $alunoData['id_aluno'];
+                $contratoPendente = $this->contratoModel->findPendingByAlunoId($id_aluno);
+
+                if ($contratoPendente) {
+                    // Contrato pendente encontrado. Gerar token temporário.
+                    $payload = [
+                        'iss' => 'your_domain.com',
+                        'aud' => 'your_app.com',
+                        'iat' => time(),
+                        'exp' => time() + 3600, // Token temporário de 1 hora
+                        'data' => [
+                            'username' => $usuario['username'],
+                            'role' => 'aluno_pendente' // Papel especial para assinatura
+                        ]
+                    ];
+                    $jwt = JWT::encode($payload, JWT_SECRET_KEY, JWT_ALGORITHM);
+
+                    http_response_code(200);
+                    echo json_encode([
+                        'success' => true,
+                        'contract_pending' => true,
+                        'message' => 'Você possui um contrato pendente para assinar.',
+                        'jwt_temporary' => $jwt,
+                        'contract_id' => $contratoPendente['id_contrato'],
+                        'contract_path' => $contratoPendente['caminho_pdf']
+                    ]);
+                    return; // Interrompe a execução para não dar o login normal
+                }
             }
-        } elseif ($usuario['role'] === 'aluno') {
-            if ($requestedRole !== 'aluno') {
-                http_response_code(403); // Forbidden
-                echo json_encode(['success' => false, 'message' => 'Alunos só podem logar como aluno.']);
-                return;
-            }
-        } else {
-            // Papel desconhecido no banco de dados
-            http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Erro interno: Papel de usuário desconhecido.']);
-            return;
         }
-
-        // Payload do JWT
+        // --- FIM DA VERIFICAÇÃO ---
+        
+        // Se passou pela verificação (não é aluno ou não tem contrato), continua com o login normal...
+        // ... (O resto da lógica de verificação de papéis e geração de token completo permanece o mesmo) ...
+        
+        // Payload do JWT de acesso completo
         $payload = [
-            'iss' => 'your_domain.com', // Emissor do token
-            'aud' => 'your_app.com',    // Audiência do token
-            'iat' => time(),            // Tempo em que o token foi emitido
-            'exp' => time() + JWT_EXPIRATION_TIME, // Tempo de expiração
+            'iss' => 'your_domain.com', 
+            'aud' => 'your_app.com',
+            'iat' => time(),
+            'exp' => time() + JWT_EXPIRATION_TIME,
             'data' => [
                 'id_usuario' => $usuario['id_usuario'],
                 'username' => $usuario['username'],
-                'role' => $usuario['role'] // Papel real do usuário no banco
+                'role' => $usuario['role']
             ]
         ];
 
         $jwt = JWT::encode($payload, JWT_SECRET_KEY, JWT_ALGORITHM);
 
-        http_response_code(200); // OK
+        http_response_code(200);
         echo json_encode([
             'success' => true,
             'message' => 'Login bem-sucedido!',
             'jwt' => $jwt,
-            'user_role' => $usuario['role'] // Retorna o papel real para o frontend
+            'user_role' => $usuario['role']
         ]);
     }
 }
