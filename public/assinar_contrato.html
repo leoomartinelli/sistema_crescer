@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assinatura de Contrato - Sistema Crescer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
+
+    <div id="main-content" class="w-full max-w-4xl bg-white p-8 rounded-lg shadow-lg hidden">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Assinatura de Contrato Pendente</h1>
+        <p class="text-gray-600 mb-6">Para continuar, por favor, leia o contrato de prestação de serviços educacionais abaixo e confirme sua aceitação.</p>
+
+        <div class="w-full h-[60vh] border rounded-md mb-6">
+            <iframe id="contract-pdf" src="" class="w-full h-full"></iframe>
+        </div>
+
+        <div id="message-area" class="hidden p-4 mb-4 text-sm rounded-lg"></div>
+
+        <div class="flex items-center mb-6">
+            <input id="agree-checkbox" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
+            <label for="agree-checkbox" class="ml-2 text-md font-medium text-gray-900">Li e concordo com todos os termos e condições do contrato apresentado.</label>
+        </div>
+
+        <button id="sign-button" disabled class="w-full bg-gray-400 text-white font-bold py-3 px-4 rounded-lg cursor-not-allowed">
+            Assinar Contrato e Acessar o Portal
+        </button>
+    </div>
+
+    <div id="loading-message" class="text-center">
+        <p class="text-lg text-gray-600">Carregando informações do contrato...</p>
+    </div>
+
+
+    <script>
+        const API_BASE_URL = 'http://localhost/Sistema/api';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('jwt_temporary');
+            const contractId = localStorage.getItem('contract_id');
+            const contractPath = localStorage.getItem('contract_path');
+
+            if (!token || !contractId || !contractPath) {
+                alert('Informações de contrato inválidas. Por favor, faça o login novamente.');
+                localStorage.clear();
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Exibir o conteúdo
+            document.getElementById('loading-message').classList.add('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
+
+            // Carregar o PDF no iframe
+            const pdfFrame = document.getElementById('contract-pdf');
+            pdfFrame.src = `http://localhost/Sistema/${contractPath}`;
+
+            const agreeCheckbox = document.getElementById('agree-checkbox');
+            const signButton = document.getElementById('sign-button');
+
+            agreeCheckbox.addEventListener('change', () => {
+                if (agreeCheckbox.checked) {
+                    signButton.disabled = false;
+                    signButton.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                    signButton.classList.add('bg-green-600', 'hover:bg-green-700');
+                } else {
+                    signButton.disabled = true;
+                    signButton.classList.add('bg-gray-400', 'cursor-not-allowed');
+                    signButton.classList.remove('bg-green-600', 'hover:bg-green-700');
+                }
+            });
+
+            signButton.addEventListener('click', async () => {
+                signButton.disabled = true;
+                signButton.textContent = 'Processando assinatura...';
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/contratos/${contractId}/assinar`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // Limpa os dados temporários
+                        localStorage.removeItem('jwt_temporary');
+                        localStorage.removeItem('contract_id');
+                        localStorage.removeItem('contract_path');
+
+                        // Salva o novo token de acesso completo
+                        localStorage.setItem('jwt_token', result.jwt);
+                        localStorage.setItem('user_role', result.user_role);
+                        
+                        displayMessage('Contrato assinado com sucesso! Redirecionando...', 'success');
+                        
+                        setTimeout(() => {
+                            window.location.href = 'aluno_dashboard.html';
+                        }, 2000);
+
+                    } else {
+                        displayMessage(result.message || 'Ocorreu um erro ao assinar.', 'error');
+                        signButton.disabled = false;
+                        signButton.textContent = 'Assinar Contrato e Acessar o Portal';
+                    }
+
+                } catch (error) {
+                    displayMessage('Erro de conexão com o servidor.', 'error');
+                    signButton.disabled = false;
+                    signButton.textContent = 'Assinar Contrato e Acessar o Portal';
+                }
+            });
+        });
+
+        function displayMessage(message, type) {
+            const area = document.getElementById('message-area');
+            area.textContent = message;
+            if (type === 'success') {
+                area.className = 'p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50';
+            } else {
+                 area.className = 'p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50';
+            }
+            area.classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>
