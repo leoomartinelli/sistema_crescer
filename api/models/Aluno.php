@@ -186,7 +186,9 @@ class Aluno {
                     $this->usuarioModel->create([
                         'username' => $data['ra'],
                         'password' => $alunoPassword,
-                        'role' => 'aluno'
+                        'role' => 'aluno_pendente',
+                        'id_aluno' => $lastId 
+
                     ]);
                 } catch (Exception $e) { 
                     error_log("Erro ao criar usuário para aluno: " . $e->getMessage()); 

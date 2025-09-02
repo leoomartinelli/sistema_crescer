@@ -1,27 +1,95 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciar Boletim - Sistema Crescer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/loader.css">
+    <script src="js/loader.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
-        .container { max-width: 1400px; margin: 2rem auto; padding: 1rem; background-color: #ffffff; border-radius: 0.75rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151; }
-        .form-group input { width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; }
-        .btn { padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s ease-in-out; }
-        .btn-primary { background-color: #4f46e5; color: #ffffff; }
-        .btn-primary:hover { background-color: #4338ca; }
-        .btn-secondary { background-color: #6b7280; color: #ffffff; }
-        .btn-secondary:hover { background-color: #4b5563; }
-        .btn-info { background-color: #3b82f6; color: #ffffff; }
-        .btn-info:hover { background-color: #2563eb; }
-        .message { padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; font-weight: 600; }
-        .message.success { background-color: #d1fae5; color: #065f46; }
-        .message.error { background-color: #fee2e2; color: #991b1b; }
-        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 1rem;
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .btn-primary {
+            background-color: #4f46e5;
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background-color: #4338ca;
+        }
+
+        .btn-secondary {
+            background-color: #6b7280;
+            color: #ffffff;
+        }
+
+        .btn-secondary:hover {
+            background-color: #4b5563;
+        }
+
+        .btn-info {
+            background-color: #3b82f6;
+            color: #ffffff;
+        }
+
+        .btn-info:hover {
+            background-color: #2563eb;
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .message.success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .message.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
         .boletim-table-wrapper {
             overflow-x: auto;
             max-height: 70vh;
@@ -29,10 +97,12 @@
             border: 1px solid #e5e7eb;
             border-radius: 0.5rem;
         }
+
         .boletim-table {
             width: 100%;
             border-collapse: collapse;
         }
+
         .boletim-table thead th {
             background-color: #f9fafb;
             position: sticky;
@@ -47,6 +117,7 @@
             border-bottom: 1px solid #e5e7eb;
             white-space: nowrap;
         }
+
         .boletim-table tbody td {
             padding: 0.5rem 0.5rem;
             border-bottom: 1px solid #e5e7eb;
@@ -54,17 +125,21 @@
             color: #374151;
             white-space: nowrap;
         }
+
         .boletim-table tbody tr:last-child td {
             border-bottom: none;
         }
+
         .boletim-table input[type="number"] {
             width: 60px;
             text-align: center;
         }
+
         .boletim-table input[type="text"] {
             width: 100px;
             text-align: center;
         }
+
         .boletim-table textarea {
             width: 200px;
             min-height: 40px;
@@ -72,18 +147,22 @@
             border: 1px solid #d1d5db;
             border-radius: 0.375rem;
         }
+
         .sticky-col {
             position: sticky;
             left: 0;
             background-color: #ffffff;
             z-index: 11;
         }
+
         .sticky-col.disciplina {
             min-width: 150px;
         }
+
         .sticky-col.aluno {
             min-width: 200px;
         }
+
         .current-year-select {
             display: inline-block;
             width: auto;
@@ -94,6 +173,7 @@
             background-color: #f9fafb;
             font-size: 1rem;
         }
+
         .search-group {
             display: flex;
             gap: 1rem;
@@ -103,148 +183,166 @@
             background-color: #f9fafb;
             border-radius: 0.5rem;
         }
+
         .search-group .form-group {
             flex-grow: 1;
             margin-bottom: 0;
         }
+
         .search-group input {
             padding: 0.625rem;
         }
 
-        /* ESTILOS PARA O PDF */
+        /* ESTILOS PARA O PDF (NOVO DESIGN) */
         #pdf-content {
             display: none;
-            padding: 10mm 15mm; /* Ajusta padding em mm para controle preciso */
+            padding: 8mm; /* Margens mínimas para maximizar o espaço */
             font-family: 'Inter', sans-serif;
-            font-size: 8pt; /* Fonte ligeiramente menor */
-            color: #000;
-            box-sizing: border-box;
-            width: 210mm; /* A4 width */
-            margin: 0 auto;
-            background-color: #fff;
-            line-height: 1.1; /* Reduz espaçamento entre linhas */
+            font-size: 18pt; /* Aumentado MUITO mais a fonte */
+            color: #1f2937;
+            background-color: #ffffff;
+            line-height: 1.6;
         }
-        #pdf-content table {
+
+        .pdf-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 50px; /* Aumentado o espaço */
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 25px;
+        }
+
+        .pdf-header .logo {
+            width: 400px; /* Aumentado MUITO mais o tamanho do logo */
+            height: auto;
+        }
+
+        .pdf-header .school-info {
+            text-align: right;
+        }
+
+        .pdf-header .school-name {
+            font-size: 36pt; /* Aumentado MUITO mais o tamanho do nome do colégio */
+            font-weight: 700;
+            color: #1e40af;
+        }
+
+        .pdf-header .school-details {
+            font-size: 16pt; /* Aumentado MUITO mais o tamanho do texto detalhado */
+            color: #4b5563;
+        }
+
+        .pdf-section {
+            margin-bottom: 50px; /* Aumentado MUITO mais o espaço entre as seções */
+        }
+
+        .pdf-section-title {
+            font-size: 22pt; /* Aumentado MUITO mais o tamanho do título */
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .pdf-info-box {
+            display: flex;
+            justify-content: space-between;
+            background-color: #f9fafb;
+            padding: 25px 35px; /* Aumentado MUITO mais o padding da caixa de info */
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .pdf-info-box p {
+            font-size: 18pt; /* Aumentado MUITO mais o tamanho do texto na caixa de info */
+            margin: 0;
+        }
+
+        .pdf-info-box strong {
+            color: #1f2937;
+        }
+
+        .pdf-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 5px;
-            table-layout: fixed; /* Essencial para larguras fixas de coluna */
         }
-        #pdf-content th, #pdf-content td {
-            border: 1px solid #000;
-            padding: 7px 12px; /* Reduzido padding das células */
+
+        .pdf-table th,
+        .pdf-table td {
+            border: 1px solid #d1d5db;
+            padding: 18px; /* Aumentado MUITO mais o padding das células da tabela */
             text-align: center;
-            vertical-align: middle;
-            font-size: 7.5pt; /* Células de tabela um pouco menores */
-            word-wrap: break-word; /* Permite quebra de palavra */
-            white-space: normal; /* Permite quebra de linha normal */
+            font-size: 16pt; /* Aumentado MUITO mais o tamanho da fonte da tabela */
         }
-        /* Estilos específicos para a tabela de cabeçalho (Aluno, Turma, etc.) */
-        #pdf-content .header-info td {
-            border: none;
-            padding: 1mm 2mm; /* Padding em mm */
+
+        .pdf-table th {
+            background-color: #f3f4f6;
+            font-weight: 600;
+            color: #4b5563;
+        }
+
+        .pdf-table .disciplina-col {
             text-align: left;
-            white-space: nowrap;
-            font-size: 8.5pt; /* Para infos de cabeçalho */
+            font-weight: 500;
+            color: #1f2937;
         }
-        #pdf-content .title-header {
-            text-align: center;
-            font-size: 10pt;
-            font-weight: bold;
-            margin-bottom: 10px;
+
+        .pdf-table .nota {
+            background-color: #e5e7eb;
         }
-        /* Assinaturas baseadas em divs com linhas (simula o Word) */
-        .signature-block {
+
+        .pdf-table .media-final,
+        .pdf-table .recuperacao {
+            font-weight: 600;
+        }
+
+        .pdf-table .resultado-final {
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        .pdf-signatures {
             display: flex;
             justify-content: space-around;
-            width: 100%;
-            margin-top: 100px; /* Reduzido o margin-top */
-            font-size: 8pt;
-        }
-        .signature-item {
-            flex: 1;
             text-align: center;
-            margin: 0 5px; /* Espaçamento menor entre os blocos */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            margin-top: 110px; /* Aumentado MUITO mais o espaço para as assinaturas */
         }
-        .signature-line {
-            border-bottom: 1px solid #000;
-            width: 90%;
-            margin-bottom: 2px; /* Reduzido */
+
+        .pdf-signatures .sig-item {
+            width: 350px; /* Aumentado MUITO mais a largura da assinatura */
         }
-        /* Para a tabela de datas e assinaturas do responsável */
-        #pdf-date-signature-table th, #pdf-date-signature-table td {
-            padding: 5px;
-            font-size: 7pt; /* Ainda menor */
-        }
-        #pdf-date-signature-table .signature-cell-responsible {
-            height: 30px; /* Altura da célula de assinatura de data */
-            vertical-align: bottom;
-            text-align: center;
-        }
-        .aprovado-reprovado-section {
-            margin-top: 10px; /* Reduzido */
-            font-size: 8pt; /* Reduzido */
-            line-height: 1.1; /* Mais compacto */
-        }
-        .aprovado-reprovado-section p {
-            margin-bottom: 1px; /* Espaçamento menor */
-        }
-        .aprovado-reprovado-section .checkbox-line {
-            display: flex;
-            align-items: center;
-            margin-left: 10px;
-            margin-top: 1px; /* Reduzido */
-        }
-        .aprovado-reprovado-section .checkbox {
-            border: 1px solid #000;
-            width: 7px; /* Tamanho menor */
-            height: 7px;
-            margin-right: 3px; /* Reduzido */
-            display: inline-block;
-            vertical-align: middle;
-        }
-        .aprovado-reprovado-section .observacoes-text {
-            border-bottom: 1px solid #000;
-            display: inline-block;
-            width: calc(100% - 60px); /* Ajustado */
-            min-height: 10px; /* Altura mínima */
-            vertical-align: bottom;
-            text-align: left;
-            padding: 0 1px; /* Reduzido */
-            line-height: 1.1;
-        }
-        .aprovado-reprovado-section .observacoes-label {
-            margin-top: 5px; /* Reduzido */
-            margin-bottom: 1px;
-            display: block;
-        }
-        .aprovado-reprovado-section .data-local {
-            text-align: right;
-            margin-top: 8px; /* Reduzido */
-            font-size: 8pt;
-        }
-        .rodape-contato {
+
+        .pdf-signatures .sig-line {
             border-top: 1px solid #000;
-            padding-top: 3px; /* Reduzido */
-            margin-top: 10px; /* Reduzido */
-            font-size: 6.5pt; /* Menor ainda */
+            margin-bottom: 5px;
+        }
+
+        .pdf-signatures p {
+            font-size: 14pt;
+            color: #374151;
+        }
+
+        .pdf-rodape-contato {
             text-align: center;
-            line-height: 1.1;
+            font-size: 12pt; /* Aumentado o tamanho do rodapé */
+            color: #6b7280;
+            margin-top: 60px;
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
+
 <body>
     <nav class="bg-gray-800 p-4 shadow-md">
         <div class="container mx-auto flex justify-between items-center max-w-full px-4">
             <a href="#" class="text-black text-2xl font-bold">Sistema Crescer</a>
             <div>
-                <a href="professor_dashboard.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">Dashboard</a>
-                <button onclick="logout()" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md">Sair</button>
+                <a href="professor_dashboard.html"
+                    class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">Dashboard</a>
+                <button onclick="logout()"
+                    class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md">Sair</button>
             </div>
         </div>
     </nav>
@@ -260,7 +358,7 @@
         </div>
 
         <div class="bg-gray-50 p-6 rounded-lg shadow-inner mb-6">
-            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Buscar Aluno no Boletim</h2>
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Buscar Aluno</h2>
             <div class="search-group">
                 <div class="form-group">
                     <label for="search_nome_aluno">Nome do Aluno</label>
@@ -279,9 +377,7 @@
 
         <div id="boletim-content" class="hidden">
             <p class="text-gray-600 mb-4">
-                Preencha as notas e faltas para cada aluno e disciplina. Campos vazios serão salvos como NULO.
-                Notas devem ser entre 0 e 10. Faltas devem ser números inteiros.
-                Média Final e Frequência Final são calculadas automaticamente.
+                Preencha as notas e faltas.
             </p>
             <div class="flex justify-end mb-4">
                 <button id="generate-pdf-button" class="btn btn-info">Gerar PDF do Boletim Exibido</button>
@@ -309,7 +405,7 @@
                         </tr>
                     </thead>
                     <tbody id="boletim-table-body">
-                        </tbody>
+                    </tbody>
                 </table>
             </div>
             <div class="flex justify-end mt-6">
@@ -319,137 +415,88 @@
     </div>
 
     <div id="pdf-content">
-        <div class="logo-header">
+        <div class="pdf-header">
+            <img class="logo" src="../api/assets/logo_rodape3.PNG" alt="Logo Colégio Crescer">
+            <div class="school-info">
+                <h1 class="school-name">COLÉGIO CRESCER</h1>
+                <p class="school-details">EDUCAÇÃO INFANTIL E ENSINO FUNDAMENTAL</p>
+                <p class="school-details">BOLETIM INFORMATIVO</p>
             </div>
-
-        <div class="text-center" style="margin-bottom: 8px;">
-            <p style="font-size: 11pt; font-weight: bold; margin-bottom: 1px;">COLÉGIO CRESCER</p>
-            <p style="font-size: 8pt;">EDUCAÇÃO INFANTIL E ENSINO FUNDAMENTAL</p>
         </div>
 
-        <table class="no-border" style="margin-bottom: 5px; font-size: 9pt;">
-            <tr class="header-info">
-                <td style="width: 100%; padding-bottom: 5px;">ALUNO(A): <span id="pdf-aluno-nome"></span></td>
-            </tr>
-            <tr class="header-info">
-                <td style="width: 100%; padding-bottom: 5px;">TURMA: <span id="pdf-turma-nome"></span></td>
-            </tr>
-            <tr class="header-info">
-                <td style="width: 100%; padding-bottom: 5px;">PROFESSORA: <span id="pdf-professor-nome"></span></td>
-            </tr>
-            <tr class="header-info">
-                <td style="width: 100%; text-align: center; padding-top: 5px;"><b>ANO LETIVO: <span id="pdf-ano-letivo"></span></b></td>
-            </tr>
-            <tr class="no-border">
-                <td colspan="2" class="title-header">BOLETIM INFORMATIVO</td>
-            </tr>
-        </table>
+        <div class="pdf-section">
+            <div class="pdf-info-box">
+                <p><strong>ALUNO(A):</strong> <span id="pdf-aluno-nome"></span></p>
+                <p><strong>TURMA:</strong> <span id="pdf-turma-nome"></span></p>
+                <p><strong>PROFESSORA:</strong> <span id="pdf-professor-nome"></span></p>
+                <p><strong>ANO LETIVO:</strong> <span id="pdf-ano-letivo"></span></p>
+            </div>
+        </div>
 
-        <table id="pdf-grades-table">
-            <thead>
-                <tr>
-                    <th rowspan="2" style="width: 25%;">DISCIPLINA</th>
-                    <th colspan="2">1º B.</th>
-                    <th colspan="2">2º B.</th>
-                    <th colspan="2">3º B.</th>
-                    <th colspan="2">4° B.</th>
-                    <th rowspan="2" style="width: 7%;">M.F.</th>
-                    <th rowspan="2" style="width: 7%;">T.F.</th>
-                    <th rowspan="2" style="width: 7%;">REC.</th>
-                    <th rowspan="2" style="width: 7%;">M.F.</th> </tr>
-                <tr>
-                    <th style="width: 11%;">Nota</th>
-                    <th style="width: 11%;">Nº F.</th>
-                    <th style="width: 11%;">Nota</th>
-                    <th style="width: 11%;">Nº F.</th>
-                    <th style="width: 11%;">Nota</th>
-                    <th style="width: 11%;">Nº F.</th>
-                    <th style="width: 11%;">Nota</th>
-                    <th style="width: 11%;">Nº F.</th>
-                </tr>
-            </thead>
-            <tbody>
+        <div class="pdf-section">
+            <table class="pdf-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2" class="disciplina-col">DISCIPLINA</th>
+                        <th colspan="2">1º Bimestre</th>
+                        <th colspan="2">2º Bimestre</th>
+                        <th colspan="2">3º Bimestre</th>
+                        <th colspan="2">4º Bimestre</th>
+                        <th rowspan="2">M.F.</th>
+                        <th rowspan="2">T.F. (%)</th>
+                        <th rowspan="2">Rec.</th>
+                        <th rowspan="2">Resultado</th>
+                    </tr>
+                    <tr>
+                        <th class="nota">Nota</th>
+                        <th>Faltas</th>
+                        <th class="nota">Nota</th>
+                        <th>Faltas</th>
+                        <th class="nota">Nota</th>
+                        <th>Faltas</th>
+                        <th class="nota">Nota</th>
+                        <th>Faltas</th>
+                    </tr>
+                </thead>
+                <tbody id="pdf-grades-table-body">
                 </tbody>
-        </table>
-
-        <table id="pdf-date-signature-table" style="margin-top: 50px;">
-            <thead>
-                <tr>
-                    <th style="width: 30%;">DATA</th>
-                    <th style="width: 10%;">1º B</th>
-                    <th style="width: 10%;">2º B</th>
-                    <th style="width: 10%;">3º B</th>
-                    <th style="width: 10%;">4° B</th>
-                    <th style="width: 10%;">M.F.</th>
-                    <th style="width: 10%;">REC.</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="text-left" style="vertical-align: middle; height: 35px; padding-top: 5px;">Assinatura<br>do<br>Responsável</td>
-                    <td class="signature-cell-responsible">X</td> <td class="signature-cell-responsible">X</td>
-                    <td class="signature-cell-responsible">X</td>
-                    <td class="signature-cell-responsible">X</td>
-                    <td class="signature-cell-responsible">X</td>
-                    <td class="signature-cell-responsible">X</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div class="signature-block ">
-            <div class="signature-item">
-                <div class="signature-line"></div>
-                PROFESSOR
-            </div>
-            <div class="signature-item">
-                <div class="signature-line"></div>
-                COORDENAÇÃO
-            </div>
-            <div class="signature-item">
-                <div class="signature-line"></div>
-                DIREÇÃO
-            </div>
-        </div>
-        
-        <div class="aprovado-reprovado-section">
-            <p style="margin-top: 30px;">Para uso do professor responsável e equipe diretiva no final do ano letivo de <span id="pdf-ano-letivo-final"></span></p>
-            <p>O (a) aluno(a): <span id="pdf-nome-aluno-final"></span> TURMA: <span id="pdf-turma-final"></span> foi:</p>
-            <div style="margin-top: 5px;">
-                <span class="checkbox"></span> <span style="margin-left: 3px;">Aprovado</span>
-            </div>
-            <div style="margin-top: 2px;">
-                <span class="checkbox"></span> <span style="margin-left: 3px;">Reprovado</span>
-            </div>
-            
-            <p class="observacoes-label" style="margin-top: 8px;">Observações: <span class="observacoes-text" id="pdf-observacoes"></span></p>
-            <div style="border-bottom: 1px solid #000; width: 100%; min-height: 10px; margin-top: 5px;"></div> 
-            <div style="border-bottom: 1px solid #000; width: 100%; min-height: 10px; margin-top: 5px;"></div>
-            
-            <p class="data-local">São José dos Campos, <span id="pdf-data-local"></span></p>
+            </table>
         </div>
 
-        <div class="signature-block" style="margin-top: 20px;">
-            <div class="signature-item">
-                <div class="signature-line"></div>
-                PROFESSOR RESPONSÁVEL
-            </div>
-            <div class="signature-item">
-                <div class="signature-line"></div>
-                COORDENAÇÃO
-            </div>
-            <div class="signature-item">
-                <div class="signature-line"></div>
-                DIREÇÃO
+        <div class="pdf-section">
+            <div class="pdf-signatures">
+                <div class="sig-item">
+                    <div class="sig-line"></div>
+                    <p>Prof. Responsável</p>
+                </div>
+                <div class="sig-item">
+                    <div class="sig-line"></div>
+                    <p>Coordenação</p>
+                </div>
+                <div class="sig-item">
+                    <div class="sig-line"></div>
+                    <p>Direção</p>
+                </div>
             </div>
         </div>
 
-        <p style="text-align: center; margin-top: 100px; font-weight: bold; font-size: 9pt;">"É PRECISO SONHAR E ACREDITAR EM UM FUTURO MELHOR!"</p>
+        <div class="pdf-section" style="margin-top: 50px;">
+            <p><strong>Observações:</strong></p>
+            <div style="border: 1px solid #d1d5db; min-height: 80px; padding: 10px; border-radius: 4px;"
+                id="pdf-observacoes"></div>
+        </div>
 
-        <div class="rodape-contato">
-            <p>Av. Rui Barbosa, 1868 - Santana - São José dos Campos</p>
-            <p>Telefone: (0**12) 33027141 - 997487141</p>
+        <div class="pdf-rodape-contato">
+            <p>"É PRECISO SONHAR E ACREDITAR EM UM FUTURO MELHOR!"</p>
+            <p>Av. Rui Barbosa, 1868 - Santana - São José dos Campos | Telefone: (0**12) 3302-7141 | (0**12) 99748-7141
+            </p>
         </div>
     </div>
+
+    <div id="global-loader" class="loader-overlay">
+        <div class="spinner"></div>
+    </div>
+
     <script>
         const API_BASE_URL = 'http://localhost/Sistema/api';
         const API_LOGIN_URL = 'login.html';
@@ -457,14 +504,31 @@
         let currentTurmaId = null;
         let currentTurmaName = '';
         let currentYear = new Date().getFullYear();
-        let currentProfessorName = ''; 
+        let currentProfessorName = '';
 
         let allAlunos = [];
         let filteredAlunos = [];
         let disciplinas = [];
         let boletimData = {};
 
-        const TOTAL_AULAS_ANO = 80; 
+        const TOTAL_AULAS_ANO = 80;
+
+        function showLoader() {
+            const loader = document.createElement('div');
+            loader.id = 'global-loader';
+            loader.className = 'loader-overlay';
+            loader.innerHTML = '<div class="spinner"></div>';
+            document.body.appendChild(loader);
+            loader.style.display = 'flex';
+        }
+
+        function hideLoader() {
+            const loader = document.getElementById('global-loader');
+            if (loader) {
+                loader.style.display = 'none';
+                document.body.removeChild(loader);
+            }
+        }
 
         function displayMessage(message, type, area = document.getElementById('message-area')) {
             area.innerHTML = message;
@@ -496,7 +560,7 @@
             const num = parseInt(value);
             return !isNaN(num) && num >= 0;
         };
-        
+
         function formatGrade(grade) {
             if (grade === null || isNaN(grade) || grade === '') {
                 return '';
@@ -512,10 +576,10 @@
         function calculateMediaFinal(n1, n2, n3, n4) {
             const notas = [n1, n2, n3, n4].filter(n => typeof n === 'number' && !isNaN(n));
             if (notas.length === 0) return null;
-            
+
             const sum = notas.reduce((acc, curr) => acc + curr, 0);
             const media = sum / 4;
-            return formatGrade(media); // Apply formatting here
+            return formatGrade(media);
         }
 
         function calculateFrequenciaFinal(f1, f2, f3, f4) {
@@ -523,7 +587,7 @@
             if (faltas.length === 0) {
                 return TOTAL_AULAS_ANO > 0 ? 100 : null;
             }
-            
+
             const totalFaltas = faltas.reduce((acc, curr) => acc + curr, 0);
 
             if (TOTAL_AULAS_ANO <= 0) {
@@ -551,7 +615,7 @@
             const mediaFinal = calculateMediaFinal(nota1, nota2, nota3, nota4);
             const mediaFinalInput = row.querySelector('[data-field="media_final"]');
             mediaFinalInput.value = mediaFinal !== null ? mediaFinal : '';
-            mediaFinalInput.readOnly = true; 
+            mediaFinalInput.readOnly = true;
             mediaFinalInput.classList.add('bg-gray-100');
 
             const frequenciaFinal = calculateFrequenciaFinal(falta1, falta2, falta3, falta4);
@@ -589,7 +653,7 @@
                             }
                             dataToSave[field] = num;
                         } else if (field === 'frequencia_final') {
-                             if (isNaN(num) || num < 0 || num > 100) {
+                            if (isNaN(num) || num < 0 || num > 100) {
                                 displayMessage(`Frequência final inválida (${value}) para o aluno ${alunoId} na disciplina ${disciplinaId}. Deve ser entre 0 e 100.`, 'error');
                                 rowIsValid = false;
                             }
@@ -621,10 +685,11 @@
         }
 
         async function fetchBoletimManagementData() {
+
             document.getElementById('loading-message').classList.remove('hidden');
             document.getElementById('boletim-content').classList.add('hidden');
             document.getElementById('error-message').classList.add('hidden');
-            
+
             try {
                 const response = await fetch(`${API_BASE_URL}/boletim/turma/${currentTurmaId}/data`, {
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('jwt_token')}` }
@@ -650,10 +715,13 @@
             } finally {
                 document.getElementById('loading-message').classList.add('hidden');
                 document.getElementById('boletim-content').classList.remove('hidden');
+
             }
         }
 
         async function fetchAllBoletinsForTurma() {
+            console.log("Iniciou C")
+
             boletimData = {};
             for (const aluno of allAlunos) {
                 const response = await fetch(`${API_BASE_URL}/boletim/aluno?id_aluno=${aluno.id_aluno}&ano_letivo=${currentYear}`, {
@@ -667,11 +735,14 @@
                     });
                 } else {
                     console.warn(`Falha ao buscar boletim para aluno ${aluno.nome_aluno} (ID: ${aluno.id_aluno}): ${result.message}`);
+                    hideLoader();
                 }
             }
         }
 
         function filterBoletimTable() {
+            console.log("Iniciou B")
+
             const searchName = document.getElementById('search_nome_aluno').value.toLowerCase().trim();
             const searchRa = document.getElementById('search_ra_aluno').value.toLowerCase().trim();
 
@@ -681,11 +752,13 @@
                 filteredAlunos = allAlunos.filter(aluno => {
                     const matchesName = aluno.nome_aluno.toLowerCase().includes(searchName);
                     const matchesRa = aluno.ra.toLowerCase().includes(searchRa);
-                    
+
                     return (searchName === '' || matchesName) && (searchRa === '' || matchesRa);
                 });
             }
+
             renderBoletimTable();
+
         }
 
         function clearSearch() {
@@ -709,34 +782,40 @@
                     const row = document.createElement('tr');
                     row.id = `boletim-row-${aluno.id_aluno}-${disciplina.id_disciplina}`;
 
-                    // Apply formatting when rendering the values (initial load)
-                    const nota1bFormatted = entry.nota_1b !== null ? formatGrade(entry.nota_1b) : '';
-                    const nota2bFormatted = entry.nota_2b !== null ? formatGrade(entry.nota_2b) : '';
-                    const nota3bFormatted = entry.nota_3b !== null ? formatGrade(entry.nota_3b) : '';
-                    const nota4bFormatted = entry.nota_4b !== null ? formatGrade(entry.nota_4b) : '';
-                    const recuperacaoFinalFormatted = entry.recuperacao_final !== null ? formatGrade(entry.recuperacao_final) : '';
-                    const mediaFinalFormatted = entry.media_final !== null ? formatGrade(entry.media_final) : '';
+                    // Correção para garantir que valores 'null' ou 'undefined' se tornem strings vazias.
+                    const nota1bFormatted = entry.nota_1b != null ? formatGrade(entry.nota_1b) : '';
+                    const faltas1b = entry.faltas_1b != null ? entry.faltas_1b : '';
+                    const nota2bFormatted = entry.nota_2b != null ? formatGrade(entry.nota_2b) : '';
+                    const faltas2b = entry.faltas_2b != null ? entry.faltas_2b : '';
+                    const nota3bFormatted = entry.nota_3b != null ? formatGrade(entry.nota_3b) : '';
+                    const faltas3b = entry.faltas_3b != null ? entry.faltas_3b : '';
+                    const nota4bFormatted = entry.nota_4b != null ? formatGrade(entry.nota_4b) : '';
+                    const faltas4b = entry.faltas_4b != null ? entry.faltas_4b : '';
+                    const recuperacaoFinalFormatted = entry.recuperacao_final != null ? formatGrade(entry.recuperacao_final) : '';
+                    const mediaFinalFormatted = entry.media_final != null ? formatGrade(entry.media_final) : '';
+                    const frequenciaFinalFormatted = entry.frequencia_final != null ? entry.frequencia_final : '';
+
 
                     row.innerHTML = `
-                        <td class="sticky-col aluno">${aluno.nome_aluno} (${aluno.ra})</td>
-                        <td class="sticky-col disciplina">${disciplina.nome_disciplina}</td>
-                        <td><input type="number" step="0.1" min="0" max="10" data-field="nota_1b" value="${nota1bFormatted}" class="rounded bg-gray-100" title="Adicione a nota do 1º Bimestre aqui"></td>
-                        <td><input type="number" min="0" data-field="faltas_1b" value="${entry.faltas_1b !== null ? entry.faltas_1b : ''}" class="rounded bg-gray-100" title="Adicione as faltas do 1º Bimestre aqui"></td>
-                        <td><input type="number" step="0.1" min="0" max="10" data-field="nota_2b" value="${nota2bFormatted}" class="rounded bg-gray-100" title="Adicione a nota do 2º Bimestre aqui"></td>
-                        <td><input type="number" min="0" data-field="faltas_2b" value="${entry.faltas_2b !== null ? entry.faltas_2b : ''}" class="rounded bg-gray-100" title="Adicione as faltas do 2º Bimestre aqui"></td>
-                        <td><input type="number" step="0.1" min="0" max="10" data-field="nota_3b" value="${nota3bFormatted}" class="rounded bg-gray-100" title="Adicione a nota do 3º Bimestre aqui"></td>
-                        <td><input type="number" min="0" data-field="faltas_3b" value="${entry.faltas_3b !== null ? entry.faltas_3b : ''}" class="rounded bg-gray-100" title="Adicione as faltas do 3º Bimestre aqui"></td>
-                        <td><input type="number" step="0.1" min="0" max="10" data-field="nota_4b" value="${nota4bFormatted}" class="rounded bg-gray-100" title="Adicione a nota do 4º Bimestre aqui"></td>
-                        <td><input type="number" min="0" data-field="faltas_4b" value="${entry.faltas_4b !== null ? entry.faltas_4b : ''}" class="rounded bg-gray-100" title="Adicione as faltas do 4º Bimestre aqui"></td>
-                        <td><input type="number" step="0.1" min="0" max="10" data-field="media_final" value="${mediaFinalFormatted}" readonly class="rounded bg-gray-200" title="Média Final"></td>
-                        <td><input type="number" step="0.01" min="0" max="100" data-field="frequencia_final" value="${entry.frequencia_final !== null ? entry.frequencia_final : ''}" readonly class="rounded bg-gray-200" title="Frequência Final"></td>
-                        <td><input type="number" step="0.1" min="0" max="10" data-field="recuperacao_final" value="${recuperacaoFinalFormatted}" class="rounded bg-gray-100" title="Adicione a nota da Recuperação Final aqui"></td>
-                        <td><input type="text" data-field="resultado_final" value="${entry.resultado_final || ''}" class="rounded bg-gray-100" title="Ex: Aprovado, Reprovado"></td>
-                        <td><textarea data-field="observacoes" class="rounded bg-gray-100" title="Adicione observações sobre o aluno/disciplina aqui"></textarea></td>
-                        <td>
-                            <button class="btn btn-primary save-single-btn text-sm" data-aluno-id="${aluno.id_aluno}" data-disciplina-id="${disciplina.id_disciplina}">Salvar</button>
-                        </td>
-                    `;
+                <td class="sticky-col aluno">${aluno.nome_aluno} (${aluno.ra})</td>
+                <td class="sticky-col disciplina">${disciplina.nome_disciplina}</td>
+                <td><input type="number" step="0.1" min="0" max="10" data-field="nota_1b" value="${nota1bFormatted}" class="rounded bg-gray-100" title="Adicione a nota do 1º Bimestre aqui"></td>
+                <td><input type="number" min="0" data-field="faltas_1b" value="${faltas1b}" class="rounded bg-gray-100" title="Adicione as faltas do 1º Bimestre aqui"></td>
+                <td><input type="number" step="0.1" min="0" max="10" data-field="nota_2b" value="${nota2bFormatted}" class="rounded bg-gray-100" title="Adicione a nota do 2º Bimestre aqui"></td>
+                <td><input type="number" min="0" data-field="faltas_2b" value="${faltas2b}" class="rounded bg-gray-100" title="Adicione as faltas do 2º Bimestre aqui"></td>
+                <td><input type="number" step="0.1" min="0" max="10" data-field="nota_3b" value="${nota3bFormatted}" class="rounded bg-gray-100" title="Adicione a nota do 3º Bimestre aqui"></td>
+                <td><input type="number" min="0" data-field="faltas_3b" value="${faltas3b}" class="rounded bg-gray-100" title="Adicione as faltas do 3º Bimestre aqui"></td>
+                <td><input type="number" step="0.1" min="0" max="10" data-field="nota_4b" value="${nota4bFormatted}" class="rounded bg-gray-100" title="Adicione a nota do 4º Bimestre aqui"></td>
+                <td><input type="number" min="0" data-field="faltas_4b" value="${faltas4b}" class="rounded bg-gray-100" title="Adicione as faltas do 4º Bimestre aqui"></td>
+                <td><input type="number" step="0.1" min="0" max="10" data-field="media_final" value="${mediaFinalFormatted}" readonly class="rounded bg-gray-200" title="Média Final"></td>
+                <td><input type="number" step="0.01" min="0" max="100" data-field="frequencia_final" value="${frequenciaFinalFormatted}" readonly class="rounded bg-gray-200" title="Frequência Final"></td>
+                <td><input type="number" step="0.1" min="0" max="10" data-field="recuperacao_final" value="${recuperacaoFinalFormatted}" class="rounded bg-gray-100" title="Adicione a nota da Recuperação Final aqui"></td>
+                <td><input type="text" data-field="resultado_final" value="${entry.resultado_final || ''}" class="rounded bg-gray-100" title="Ex: Aprovado, Reprovado"></td>
+                <td><textarea data-field="observacoes" class="rounded bg-gray-100" title="Adicione observações sobre o aluno/disciplina aqui"></textarea></td>
+                <td>
+                    <button class="btn btn-primary save-single-btn text-sm" data-aluno-id="${aluno.id_aluno}" data-disciplina-id="${disciplina.id_disciplina}">Salvar</button>
+                </td>
+            `;
                     tbody.appendChild(row);
 
                     const inputsToWatch = [
@@ -747,35 +826,32 @@
                     inputsToWatch.forEach(field => {
                         const inputElement = row.querySelector(`[data-field="${field}"]`);
                         if (inputElement) {
-                            // Event listener para quando o foco sai do campo (blur)
                             inputElement.addEventListener('blur', () => {
                                 if (field.includes('nota') || field.includes('recuperacao_final')) {
                                     const parsedValue = parseFloat(inputElement.value);
                                     if (!isNaN(parsedValue)) {
                                         inputElement.value = formatGrade(parsedValue);
                                     } else if (inputElement.value.trim() === '') {
-                                        inputElement.value = ''; // Ensure empty string for null
+                                        inputElement.value = '';
                                     }
                                 }
                                 applyCalculationsToRow(aluno.id_aluno, disciplina.id_disciplina);
                             });
-                            // Event listener para quando a tecla Enter é pressionada
                             inputElement.addEventListener('keydown', (event) => {
                                 if (event.key === 'Enter') {
-                                    event.preventDefault(); // Prevent form submission
+                                    event.preventDefault();
                                     if (field.includes('nota') || field.includes('recuperacao_final')) {
                                         const parsedValue = parseFloat(inputElement.value);
                                         if (!isNaN(parsedValue)) {
                                             inputElement.value = formatGrade(parsedValue);
                                         } else if (inputElement.value.trim() === '') {
-                                            inputElement.value = ''; // Ensure empty string for null
+                                            inputElement.value = '';
                                         }
                                     }
                                     applyCalculationsToRow(aluno.id_aluno, disciplina.id_disciplina);
-                                    inputElement.blur(); // Move focus away to trigger blur if needed
+                                    inputElement.blur();
                                 }
                             });
-                            // No 'input' event listener for formatting here, only for calculation on changes
                             inputElement.addEventListener('input', () => {
                                 applyCalculationsToRow(aluno.id_aluno, disciplina.id_disciplina);
                             });
@@ -799,7 +875,7 @@
             let allDataToValidateAndSave = [];
             let validationErrors = [];
 
-            filteredAlunos.forEach(aluno => { 
+            filteredAlunos.forEach(aluno => {
                 disciplinas.forEach(disciplina => {
                     const rowData = collectRowData(aluno.id_aluno, disciplina.id_disciplina);
                     if (rowData) {
@@ -849,8 +925,8 @@
             } else {
                 displayMessage(`Concluído com ${successfulSaves} sucessos e ${failedSaves} falhas. Detalhes: <br>${errorMessages.join('<br>')}`, 'error');
             }
-            
-            await fetchAllBoletinsForTurma(); 
+
+            await fetchAllBoletinsForTurma();
             filterBoletimTable();
 
             saveAllButton.disabled = false;
@@ -858,12 +934,14 @@
         });
 
         async function saveSingleBoletimEntry(button) {
+            console.log("Iniciou A")
+            showLoader();
             const alunoId = parseInt(button.dataset.alunoId);
             const disciplinaId = parseInt(button.dataset.disciplinaId);
-            
+
             const dataToSave = collectRowData(alunoId, disciplinaId);
 
-            if (!dataToSave) { 
+            if (!dataToSave) {
                 return;
             }
 
@@ -872,7 +950,7 @@
 
             try {
                 const response = await fetch(`${API_BASE_URL}/boletim/entry`, {
-                    method: 'POST', 
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('jwt_token')}` },
                     body: JSON.stringify(dataToSave)
                 });
@@ -891,6 +969,7 @@
             } finally {
                 button.disabled = false;
                 button.textContent = 'Salvar';
+                hideLoader();
             }
         }
 
@@ -899,7 +978,6 @@
             await fetchBoletimManagementData();
         });
 
-        // NOVA FUNÇÃO: Gerar PDF do boletim do aluno exibido
         document.getElementById('generate-pdf-button').addEventListener('click', async () => {
             if (filteredAlunos.length !== 1) {
                 displayMessage('Selecione exatamente um aluno para gerar o PDF.', 'error');
@@ -912,18 +990,13 @@
             generatePdfButton.textContent = 'Gerando...';
 
             const alunoParaPdf = filteredAlunos[0];
-            
-            // Preencher os dados no HTML oculto para o PDF
-            document.getElementById('pdf-aluno-nome').textContent = `${alunoParaPdf.nome_aluno}`;
+
+            document.getElementById('pdf-aluno-nome').textContent = alunoParaPdf.nome_aluno;
             document.getElementById('pdf-turma-nome').textContent = currentTurmaName;
-            document.getElementById('pdf-professor-nome').textContent = currentProfessorName || 'N/A';
+            document.getElementById('pdf-professor-nome').textContent = currentProfessorName || '';
             document.getElementById('pdf-ano-letivo').textContent = currentYear;
-            document.getElementById('pdf-ano-letivo-final').textContent = currentYear; 
-            document.getElementById('pdf-nome-aluno-final').textContent = alunoParaPdf.nome_aluno;
-            document.getElementById('pdf-turma-final').textContent = currentTurmaName; 
 
-
-            const pdfGradesTbody = document.querySelector('#pdf-grades-table tbody');
+            const pdfGradesTbody = document.getElementById('pdf-grades-table-body');
             pdfGradesTbody.innerHTML = '';
 
             let observacoesAluno = '';
@@ -931,7 +1004,6 @@
             disciplinas.forEach(disciplina => {
                 const entry = boletimData[alunoParaPdf.id_aluno]?.[disciplina.id_disciplina] || {};
 
-                // Coletar dados da linha da tabela visível (garante que os valores mais recentes sejam usados)
                 const rowElement = document.getElementById(`boletim-row-${alunoParaPdf.id_aluno}-${disciplina.id_disciplina}`);
                 let currentNota1b = rowElement ? rowElement.querySelector('[data-field="nota_1b"]').value : (entry.nota_1b !== null ? formatGrade(entry.nota_1b) : '');
                 let currentFaltas1b = rowElement ? rowElement.querySelector('[data-field="faltas_1b"]').value : (entry.faltas_1b !== null ? entry.faltas_1b : '');
@@ -951,43 +1023,37 @@
                     observacoesAluno += `[${disciplina.nome_disciplina}]: ${currentObservacoes} \n`;
                 }
 
-                // Linha de dados para a tabela de notas do PDF (com colunas de faltas separadas)
                 const rowHtml = `
                     <tr>
-                        <td class="text-left">${disciplina.nome_disciplina}</td>
-                        <td>${currentNota1b}</td>
+                        <td class="disciplina-col">${disciplina.nome_disciplina}</td>
+                        <td class="nota">${currentNota1b}</td>
                         <td>${currentFaltas1b}</td>
-                        <td>${currentNota2b}</td>
+                        <td class="nota">${currentNota2b}</td>
                         <td>${currentFaltas2b}</td>
-                        <td>${currentNota3b}</td>
+                        <td class="nota">${currentNota3b}</td>
                         <td>${currentFaltas3b}</td>
-                        <td>${currentNota4b}</td>
+                        <td class="nota">${currentNota4b}</td>
                         <td>${currentFaltas4b}</td>
-                        <td>${currentMediaFinal}</td>
+                        <td class="media-final">${currentMediaFinal}</td>
                         <td>${currentFrequenciaFinal}</td>
-                        <td>${currentRecuperacaoFinal}</td>
-                        <td>${currentResultadoFinal}</td>
+                        <td class="recuperacao">${currentRecuperacaoFinal}</td>
+                        <td class="resultado-final">${currentResultadoFinal}</td>
                     </tr>
                 `;
                 pdfGradesTbody.innerHTML += rowHtml;
             });
             document.getElementById('pdf-observacoes').textContent = observacoesAluno;
-            const today = new Date();
-            const optionsDate = { day: 'numeric', month: 'long', year: 'numeric' };
-            document.getElementById('pdf-data-local').textContent = `............${today.getDate()} de ${today.toLocaleDateString('pt-BR', { month: 'long' })} de ${today.getFullYear()}`;
 
 
             const input = document.getElementById('pdf-content');
             try {
                 input.style.display = 'block';
 
-                const canvas = await html2canvas(input, { 
-                    scale: 3, /* Aumenta a escala para melhor qualidade, mas pode consumir mais memória */
-                    useCORS: true, 
-                    logging: true 
+                const canvas = await html2canvas(input, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: true
                 });
-
-                console.log("Objeto canvas gerado:", canvas);
 
                 const imgData = canvas.toDataURL('image/png');
 
@@ -996,19 +1062,11 @@
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('p', 'mm', 'a4');
 
-                const imgWidth = 210; 
-                const pageHeight = 297; 
-
+                const imgWidth = 210;
                 const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-                let finalImgHeight = imgHeight;
-                // Se a imagem for muito alta, ela será escalada para caber, mantendo a proporção de largura
-                if (imgHeight > pageHeight) {
-                    finalImgHeight = pageHeight; 
-                }
+                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
 
-                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, finalImgHeight);
-                
                 pdf.save(`Boletim_${alunoParaPdf.nome_aluno.replace(/\s/g, '_')}_${currentYear}.pdf`);
                 displayMessage('PDF gerado com sucesso!', 'success');
 
@@ -1021,11 +1079,10 @@
             }
         });
 
-        // Inicialização
         document.addEventListener('DOMContentLoaded', async () => {
             const token = localStorage.getItem('jwt_token');
             const role = localStorage.getItem('user_role');
-            currentProfessorName = localStorage.getItem('user_name') || ''; 
+            currentProfessorName = localStorage.getItem('user_name') || '';
 
             if (!token || (role !== 'professor' && role !== 'admin')) {
                 logout();
@@ -1038,7 +1095,6 @@
             if (!currentTurmaId || !currentTurmaName) {
                 document.getElementById('error-message').textContent = 'ID da turma ou nome da turma não fornecidos na URL.';
                 document.getElementById('error-message').classList.remove('hidden');
-                document.getElementById('loading-message').classList.add('hidden');
                 return;
             }
 
@@ -1059,9 +1115,9 @@
             document.getElementById('search_nome_aluno').addEventListener('input', filterBoletimTable);
             document.getElementById('search_ra_aluno').addEventListener('input', filterBoletimTable);
 
-
             await fetchBoletimManagementData();
         });
     </script>
 </body>
+
 </html>

@@ -6,6 +6,8 @@
     <title>Dashboard do Professor - Sistema Crescer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/loader.css">
+    <script src="js/loader.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
         .card { background-color: #ffffff; border-radius: 0.75rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); }
@@ -55,9 +57,29 @@
         <div id="error-message" class="hidden mt-8 p-4 bg-red-100 text-red-700 rounded-lg"></div>
     </main>
 
+
+    <div id="global-loader" class="loader-overlay">
+        <div class="spinner"></div>
+    </div>
+
     <script>
         const API_BASE_URL = 'http://localhost/Sistema/api';
         const API_LOGIN_URL = 'login.html';
+
+
+        window.showLoader = function () {
+            const loader = document.getElementById('global-loader');
+            if (loader) {
+                loader.style.display = 'flex';
+            }
+        }
+
+        window.hideLoader = function () {
+            const loader = document.getElementById('global-loader');
+            if (loader) {
+                loader.style.display = 'none';
+            }
+        }
 
         function logout() {
             localStorage.clear();
@@ -75,6 +97,7 @@
         };
 
         document.addEventListener('DOMContentLoaded', async () => {
+            showLoader();
             const token = localStorage.getItem('jwt_token');
             const role = localStorage.getItem('user_role');
 
@@ -114,6 +137,7 @@
                 document.getElementById('error-message').classList.remove('hidden');
             } finally {
                 document.getElementById('loading-message').classList.add('hidden');
+                hideLoader();
             }
         });
 

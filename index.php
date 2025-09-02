@@ -32,6 +32,7 @@ require_once __DIR__ . '/api/controllers/DisciplinaController.php';
 require_once __DIR__ . '/api/controllers/BoletimController.php';
 require_once __DIR__ . '/api/controllers/InadimplenciaController.php';
 require_once __DIR__ . '/api/controllers/ContratoController.php';
+require_once __DIR__ . '/api/controllers/UsuarioController.php';
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
@@ -43,8 +44,7 @@ $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $requestMethod = $_SERVER['REQUEST_METHOD'];
 $basePath = '/Sistema'; // <-- DEFINIÇÃO DA BASE PATH
 if (strpos($requestUri, $basePath) === 0) {
-    // CORREÇÃO AQUI: USAR $basePath, NÃO 'Sistemas'
-    $requestUri = substr($requestUri, strlen($basePath)); 
+    $requestUri = substr($requestUri, strlen($basePath));
 }
 if (empty($requestUri) || $requestUri[0] !== '/') {
     $requestUri = '/' . $requestUri;
@@ -74,7 +74,6 @@ if (!isset($publicRoutes[$requestUri]) && strpos($requestUri, '/api/') === 0) {
         $decoded = JWT::decode($jwt, new Key(JWT_SECRET_KEY, JWT_ALGORITHM));
         $GLOBALS['user_data'] = (array) $decoded->data;
 
-        // NOVO LOG: Inspeciona o conteúdo de $GLOBALS['user_data'] após a decodificação
         error_log("DEBUG INDEX: Conteúdo de \$GLOBALS['user_data'] após decodificação em index.php: " . print_r($GLOBALS['user_data'], true));
 
     } catch (Exception $e) {
@@ -89,7 +88,8 @@ if (!isset($publicRoutes[$requestUri]) && strpos($requestUri, '/api/') === 0) {
 // -----------------------------------------------------------------------------
 // FUNÇÕES AUXILIARES DE AUTORIZAÇÃO
 // -----------------------------------------------------------------------------
-function requireRole($allowedRoles) {
+function requireRole($allowedRoles)
+{
     $userRole = $GLOBALS['user_data']['role'] ?? null;
     if (!in_array($userRole, $allowedRoles)) {
         http_response_code(403);
@@ -98,12 +98,13 @@ function requireRole($allowedRoles) {
     }
 }
 
-// FUNÇÕES QUE AGORA ACESSAM DIRETAMENTE $GLOBALS['user_data']
-function getUsernameFromToken() {
+function getUsernameFromToken()
+{
     return $GLOBALS['user_data']['username'] ?? null;
 }
 
-function getUserIdFromToken() {
+function getUserIdFromToken()
+{
     return $GLOBALS['user_data']['id_usuario'] ?? null;
 }
 
@@ -119,21 +120,27 @@ $disciplinaController = new DisciplinaController();
 $boletimController = new BoletimController();
 $inadimplenciaController = new InadimplenciaController();
 $contratoController = new ContratoController();
+$usuarioController = new UsuarioController();
 
 switch (true) {
     // --- ROTA DE AUTENTICAÇÃO ---
     case $requestUri === '/api/auth/login':
-        if ($requestMethod === 'POST') $authController->login();
+        if ($requestMethod === 'POST')
+            $authController->login();
+        break;
+
+    case $requestUri === '/api/auth/change-password':
+        requireRole(['admin', 'professor', 'aluno']);
+        if ($requestMethod === 'PUT')
+            $authController->changePassword();
         break;
 
     // --- ROTAS DE ALUNOS ---
     case $requestUri === '/api/alunos':
         $userRole = $GLOBALS['user_data']['role'] ?? null;
-        // CORREÇÃO: Acessando diretamente as variáveis, pois as funções podem ter sido chamadas antes da definição do global em alguns casos.
         $usernameFromToken = $GLOBALS['user_data']['username'] ?? null;
         $userIdFromToken = $GLOBALS['user_data']['id_usuario'] ?? null;
-        
-        // Logs de debug atualizados para usar as variáveis locais
+
         error_log("DEBUG: Token User Role: " . ($userRole ?? 'NULL'));
         error_log("DEBUG: Token Username (RA): " . ($usernameFromToken ?? 'NULL'));
         error_log("DEBUG: Token User ID: " . ($userIdFromToken ?? 'NULL'));
@@ -141,10 +148,9 @@ switch (true) {
         if ($requestMethod === 'GET') {
             if ($userRole === 'admin' || $userRole === 'professor') {
                 $alunoController->getAll();
-            } 
-            elseif ($userRole === 'aluno') {
+            } elseif ($userRole === 'aluno') {
                 $requestedRa = isset($_GET['ra']) ? $_GET['ra'] : null;
-                
+
                 if ($requestedRa && $requestedRa === $usernameFromToken) {
                     $alunoController->getAll();
                 } else {
@@ -157,71 +163,85 @@ switch (true) {
                 echo json_encode(['success' => false, 'message' => 'Acesso negado.']);
                 exit();
             }
-        } 
-        elseif ($requestMethod === 'POST') {
+        } elseif ($requestMethod === 'POST') {
             requireRole(['admin', 'professor']);
             $alunoController->create();
         }
         break;
-        
+
     case preg_match('/^\/api\/alunos\/(\d+)$/', $requestUri, $matches):
         requireRole(['admin', 'professor']);
         $id = $matches[1];
-        if ($requestMethod === 'GET') $alunoController->getById($id);
-        elseif ($requestMethod === 'PUT') $alunoController->update($id);
-        elseif ($requestMethod === 'DELETE') $alunoController->delete($id);
+        if ($requestMethod === 'GET')
+            $alunoController->getById($id);
+        elseif ($requestMethod === 'PUT')
+            $alunoController->update($id);
+        elseif ($requestMethod === 'DELETE')
+            $alunoController->delete($id);
         break;
 
     // --- ROTAS DE TURMAS ---
     case $requestUri === '/api/turmas':
         requireRole(['admin', 'professor']);
-        if ($requestMethod === 'GET') $turmaController->getAll();
-        elseif ($requestMethod === 'POST') $turmaController->create();
+        if ($requestMethod === 'GET')
+            $turmaController->getAll();
+        elseif ($requestMethod === 'POST')
+            $turmaController->create();
         break;
     case preg_match('/^\/api\/turmas\/(\d+)\/alunos$/', $requestUri, $matches):
         requireRole(['admin', 'professor']);
         $idTurma = $matches[1];
-        if ($requestMethod === 'GET') $alunoController->getAlunosByTurma($idTurma);
+        if ($requestMethod === 'GET')
+            $alunoController->getAlunosByTurma($idTurma);
         break;
     case preg_match('/^\/api\/turmas\/(\d+)$/', $requestUri, $matches):
         requireRole(['admin', 'professor']);
         $id = $matches[1];
-        if ($requestMethod === 'GET') $turmaController->getById($id);
-        elseif ($requestMethod === 'PUT') $turmaController->update($id);
-        elseif ($requestMethod === 'DELETE') $turmaController->delete($id);
+        if ($requestMethod === 'GET')
+            $turmaController->getById($id);
+        elseif ($requestMethod === 'PUT')
+            $turmaController->update($id);
+        elseif ($requestMethod === 'DELETE')
+            $turmaController->delete($id);
         break;
 
     // --- ROTAS DE PROFESSORES ---
     case $requestUri === '/api/professores':
-        requireRole(['admin']); // Apenas admin pode gerenciar o CRUD completo de professores
-        if ($requestMethod === 'GET') $professorController->getAll();
-        elseif ($requestMethod === 'POST') $professorController->create();
+        requireRole(['admin']);
+        if ($requestMethod === 'GET')
+            $professorController->getAll();
+        elseif ($requestMethod === 'POST')
+            $professorController->create();
         break;
     case preg_match('/^\/api\/professores\/(\d+)$/', $requestUri, $matches):
         requireRole(['admin']);
         $id = $matches[1];
-        if ($requestMethod === 'GET') $professorController->getById($id);
-        elseif ($requestMethod === 'PUT') $professorController->update($id);
-        elseif ($requestMethod === 'DELETE') $professorController->delete($id);
+        if ($requestMethod === 'GET')
+            $professorController->getById($id);
+        elseif ($requestMethod === 'PUT')
+            $professorController->update($id);
+        elseif ($requestMethod === 'DELETE')
+            $professorController->delete($id);
         break;
 
-    // Rotas para gerenciar turmas de um professor específico
     case preg_match('/^\/api\/professores\/(\d+)\/turmas$/', $requestUri, $matches):
-        requireRole(['admin']); // Apenas admin pode adicionar/remover turmas de professores
+        requireRole(['admin']);
         $idProfessor = $matches[1];
-        if ($requestMethod === 'GET') $professorController->getProfessorTurmas($idProfessor);
-        elseif ($requestMethod === 'POST') $professorController->addTurmaToProfessor($idProfessor);
+        if ($requestMethod === 'GET')
+            $professorController->getProfessorTurmas($idProfessor);
+        elseif ($requestMethod === 'POST')
+            $professorController->addTurmaToProfessor($idProfessor);
         break;
     case preg_match('/^\/api\/professores\/(\d+)\/turmas\/(\d+)$/', $requestUri, $matches):
         requireRole(['admin']);
         $idProfessor = $matches[1];
         $idTurma = $matches[2];
-        if ($requestMethod === 'DELETE') $professorController->removeTurmaFromProfessor($idProfessor, $idTurma);
+        if ($requestMethod === 'DELETE')
+            $professorController->removeTurmaFromProfessor($idProfessor, $idTurma);
         break;
 
-    // Rota para o Dashboard do Professor (acessível pelo próprio professor)
     case $requestUri === '/api/professor/dashboard':
-        requireRole(['professor', 'admin']); // Professor pode acessar o próprio dashboard. Admin também, para testes.
+        requireRole(['professor', 'admin']);
         if ($requestMethod === 'GET') {
             $userId = getUserIdFromToken();
             if ($userId) {
@@ -233,76 +253,74 @@ switch (true) {
         }
         break;
 
-    // --- ROTAS DE DISCIPLINAS (NOVAS - GERENCIADAS POR ADMIN) ---
+    // --- ROTAS DE DISCIPLINAS ---
     case $requestUri === '/api/disciplinas':
         requireRole(['admin']);
-        if ($requestMethod === 'GET') $disciplinaController->getAll();
-        elseif ($requestMethod === 'POST') $disciplinaController->create();
+        if ($requestMethod === 'GET')
+            $disciplinaController->getAll();
+        elseif ($requestMethod === 'POST')
+            $disciplinaController->create();
         break;
     case preg_match('/^\/api\/disciplinas\/(\d+)$/', $requestUri, $matches):
         requireRole(['admin']);
         $id = $matches[1];
-        if ($requestMethod === 'GET') $disciplinaController->getById($id);
-        elseif ($requestMethod === 'PUT') $disciplinaController->update($id);
-        elseif ($requestMethod === 'DELETE') $disciplinaController->delete($id);
+        if ($requestMethod === 'GET')
+            $disciplinaController->getById($id);
+        elseif ($requestMethod === 'PUT')
+            $disciplinaController->update($id);
+        elseif ($requestMethod === 'DELETE')
+            $disciplinaController->delete($id);
         break;
-    
-    // NOVA ROTA: Obtém turmas associadas a uma disciplina
+
     case preg_match('/^\/api\/disciplinas\/(\d+)\/turmas$/', $requestUri, $matches):
         requireRole(['admin']);
         $idDisciplina = $matches[1];
-        if ($requestMethod === 'GET') $disciplinaController->getDisciplinasAssociatedTurmas($idDisciplina);
+        if ($requestMethod === 'GET')
+            $disciplinaController->getDisciplinasAssociatedTurmas($idDisciplina);
         break;
 
-    // Rotas para gerenciar disciplinas de uma turma (Associar disciplinas a turmas)
     case preg_match('/^\/api\/turmas\/(\d+)\/disciplinas$/', $requestUri, $matches):
-        requireRole(['admin']); // Apenas admin pode adicionar/remover disciplinas de turmas
+        requireRole(['admin']);
         $idTurma = $matches[1];
-        if ($requestMethod === 'GET') $disciplinaController->getTurmaDisciplinas($idTurma);
-        elseif ($requestMethod === 'POST') $disciplinaController->addDisciplinaToTurma($idTurma);
+        if ($requestMethod === 'GET')
+            $disciplinaController->getTurmaDisciplinas($idTurma);
+        elseif ($requestMethod === 'POST')
+            $disciplinaController->addDisciplinaToTurma($idTurma);
         break;
     case preg_match('/^\/api\/turmas\/(\d+)\/disciplinas\/(\d+)$/', $requestUri, $matches):
         requireRole(['admin']);
         $idTurma = $matches[1];
         $idDisciplina = $matches[2];
-        if ($requestMethod === 'DELETE') $disciplinaController->removeDisciplinaFromTurma($idTurma, $idDisciplina);
+        if ($requestMethod === 'DELETE')
+            $disciplinaController->removeDisciplinaFromTurma($idTurma, $idDisciplina);
         break;
-    
-    // --- ROTAS DE BOLETIM (NOVAS - GERENCIADAS POR PROFESSOR/ADMIN) ---
-    // Rota para obter dados para a tela de gerenciamento de boletim (alunos e disciplinas de uma turma)
+
+    // --- ROTAS DE BOLETIM ---
     case preg_match('/^\/api\/boletim\/turma\/(\d+)\/data$/', $requestUri, $matches):
         requireRole(['admin', 'professor']);
         $idTurma = $matches[1];
-        if ($requestMethod === 'GET') $boletimController->getBoletimManagementData($idTurma);
+        if ($requestMethod === 'GET')
+            $boletimController->getBoletimManagementData($idTurma);
         break;
 
-    // Rota para obter o boletim completo de um aluno (usado na tela de gerenciamento de boletim)
     case $requestUri === '/api/boletim/aluno':
-        // Acesso para Admin e Professor (podem ver qualquer boletim)
-        // Acesso para Aluno (pode ver apenas o próprio boletim)
         $userRole = $GLOBALS['user_data']['role'] ?? null;
-        // As variáveis abaixo são agora preenchidas diretamente de $GLOBALS['user_data']
         $userIdFromToken = $GLOBALS['user_data']['id_usuario'] ?? null;
         $usernameFromToken = $GLOBALS['user_data']['username'] ?? null;
 
         if ($requestMethod === 'GET') {
             if ($userRole === 'admin' || $userRole === 'professor') {
-                // Admin e Professor podem usar os parâmetros id_aluno e ano_letivo normalmente
                 $boletimController->getBoletimAluno();
             } elseif ($userRole === 'aluno') {
-                // Aluno só pode consultar o próprio boletim
-                $requestedIdAluno = isset($_GET['id_aluno']) ? (int)$_GET['id_aluno'] : null;
-                $requestedAnoLetivo = isset($_GET['ano_letivo']) ? (int)$_GET['ano_letivo'] : null;
+                $requestedIdAluno = isset($_GET['id_aluno']) ? (int) $_GET['id_aluno'] : null;
+                $requestedAnoLetivo = isset($_GET['ano_letivo']) ? (int) $_GET['ano_letivo'] : null;
 
                 require_once __DIR__ . '/api/models/Aluno.php';
                 $alunoModel = new Aluno();
-                // Assumindo que getAll pode filtrar por RA se o primeiro parâmetro for null para ID
                 $alunoLogado = $alunoModel->getAll(null, $usernameFromToken, null);
-                
-                // Se encontrar o aluno logado e o ID solicitado for o dele
+
                 if (!empty($alunoLogado) && $alunoLogado[0]['id_aluno'] === $requestedIdAluno) {
-                    // Se o ID do aluno logado corresponde ao ID solicitado, permita
-                    $boletimController->getBoletimAluno(); // Passa os parâmetros da URL
+                    $boletimController->getBoletimAluno();
                 } else {
                     http_response_code(403);
                     echo json_encode(['success' => false, 'message' => 'Acesso negado. Alunos só podem consultar o próprio boletim.']);
@@ -316,32 +334,32 @@ switch (true) {
         }
         break;
 
-    // Rota para salvar/atualizar uma entrada de boletim
     case $requestUri === '/api/boletim/entry':
         requireRole(['admin', 'professor']);
-        if ($requestMethod === 'POST') $boletimController->saveBoletimEntry();
+        if ($requestMethod === 'POST')
+            $boletimController->saveBoletimEntry();
         break;
 
-    // Rota para deletar uma entrada específica do boletim (se necessário)
     case preg_match('/^\/api\/boletim\/entry\/(\d+)$/', $requestUri, $matches):
         requireRole(['admin', 'professor']);
         $idBoletim = $matches[1];
-        if ($requestMethod === 'DELETE') $boletimController->deleteBoletimEntry($idBoletim);
+        if ($requestMethod === 'DELETE')
+            $boletimController->deleteBoletimEntry($idBoletim);
         break;
 
-    // --- ROTAS DE MENSALIDADES (ADMIN/PROFESSOR/ALUNO) ---
+    // --- ROTAS DE MENSALIDADES ---
     case $requestUri === '/api/mensalidades':
         requireRole(['admin', 'professor']);
-        if ($requestMethod === 'GET') $mensalidadeController->getAll();
-        elseif ($requestMethod === 'POST') $mensalidadeController->create();
+        if ($requestMethod === 'GET')
+            $mensalidadeController->getAll();
+        elseif ($requestMethod === 'POST')
+            $mensalidadeController->create();
         break;
-        
+
     case preg_match('/^\/api\/mensalidades\/(\d+)$/', $requestUri, $matches):
         if ($requestMethod === 'GET') {
-            // A verificação de permissão (se o aluno é dono da fatura) é feita DENTRO do controller
             $mensalidadeController->getMensalidadeDetails($matches[1]);
-        }
-        elseif ($requestMethod === 'DELETE') {
+        } elseif ($requestMethod === 'DELETE') {
             requireRole(['admin', 'professor']);
             $mensalidadeController->delete($matches[1]);
         }
@@ -349,7 +367,8 @@ switch (true) {
 
     case preg_match('/^\/api\/mensalidades\/(\d+)\/pagar$/', $requestUri, $matches):
         requireRole(['admin', 'professor']);
-        if ($requestMethod === 'PUT') $mensalidadeController->registerPayment($matches[1]);
+        if ($requestMethod === 'PUT')
+            $mensalidadeController->registerPayment($matches[1]);
         break;
 
     case $requestUri === '/api/aluno/mensalidades':
@@ -372,25 +391,83 @@ switch (true) {
         }
         break;
 
-    // --- ROTAS DE INADIMPLÊNCIA (NOVO) ---
+    // --- ROTAS DE INADIMPLÊNCIA ---
     case $requestUri === '/api/inadimplencia/local':
-        if ($requestMethod === 'GET') $inadimplenciaController->getInadimplenciaLocal();
+        if ($requestMethod === 'GET')
+            $inadimplenciaController->getInadimplenciaLocal();
         break;
-        
+
     case $requestUri === '/api/inadimplencia/salvar':
-        if ($requestMethod === 'POST') $inadimplenciaController->salvarInadimplencia();
+        if ($requestMethod === 'POST')
+            $inadimplenciaController->salvarInadimplencia();
+        break;
+
+    // --- ROTAS DE CONTRATOS ---
+    case $requestUri === '/api/contratos':
+        requireRole(['admin']);
+        if ($requestMethod === 'GET')
+            $contratoController->getAllContratos();
+        break;
+
+    case preg_match('/^\/api\/contratos\/(\d+)\/validar$/', $requestUri, $matches):
+        requireRole(['admin']);
+        $idContrato = $matches[1];
+        if ($requestMethod === 'PUT')
+            $contratoController->validarContrato($idContrato);
+        break;
+
+    case preg_match('/^\/api\/contratos\/(\d+)\/download$/', $requestUri, $matches):
+        requireRole(['admin', 'aluno']);
+        $idContrato = $matches[1];
+        if ($requestMethod === 'GET') {
+            $contratoController->downloadContrato($idContrato);
+        }
         break;
 
     case preg_match('/^\/api\/contratos\/(\d+)\/assinar$/', $requestUri, $matches):
         $idContrato = $matches[1];
         if ($requestMethod === 'POST') {
-             // A verificação de permissão é feita dentro do método assinar()
-             $contratoController->assinar($idContrato);
+            $contratoController->assinar($idContrato);
         }
-        break;    
+        break;
+
+    case $requestUri === '/api/contratos/uploadAssinado':
+        if ($requestMethod === 'POST') {
+            $contratoController->uploadAssinado();
+        }
+        break;
+
+    // --- ROTAS DE GERENCIAMENTO DE USUÁRIOS (ADMIN ONLY) ---
+    case $requestUri === '/api/usuarios':
+        requireRole(['admin']);
+        if ($requestMethod === 'GET')
+            $usuarioController->getAll();
+        elseif ($requestMethod === 'POST')
+            $usuarioController->create();
+        break;
+
+    case preg_match('/^\/api\/usuarios\/(\d+)$/', $requestUri, $matches):
+        requireRole(['admin']);
+        $id = $matches[1];
+        if ($requestMethod === 'GET')
+            $usuarioController->getById($id);
+        elseif ($requestMethod === 'PUT')
+            $usuarioController->update($id);
+        elseif ($requestMethod === 'DELETE')
+            $usuarioController->delete($id);
+        break;
+
+    case preg_match('/^\/api\/usuarios\/(\d+)\/reset-password$/', $requestUri, $matches):
+        requireRole(['admin']);
+        $id = $matches[1];
+        if ($requestMethod === 'PUT')
+            $usuarioController->resetPassword($id);
+        break;
+
+
     // --- ROTA PADRÃO (Endpoint não encontrado) ---
     default:
         http_response_code(404);
         echo json_encode(['success' => false, 'message' => 'Endpoint não encontrado.']);
-        break;    
+        break;
 }

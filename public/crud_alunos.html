@@ -161,10 +161,6 @@
             padding: 0.375rem 0.75rem;
             font-size: 0.875rem;
         }
-
-        
-
-
     </style>
 </head>
 
@@ -183,10 +179,17 @@
                     class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md">Disciplinas</a>
                 <a href="crud_mensalidades.html"
                     class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md">Mensalidades</a>
+                <a href="gerenciar_contratos.html"
+                    class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md">Contratos</a>
                 <a href="crud_consultar_cpf.html"
                     class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md">Consulta CPF</a>
+                <a id="nav-gerenciar-usuarios" href="gerenciar_usuarios.html"
+                    class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md">Gerenciar Usuários</a>
                 <button onclick="logout()"
                     class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md">Sair</button>
+
+
+
             </div>
         </div>
     </nav>
@@ -326,7 +329,7 @@
                     <div class="form-group"><label for="cpf_mae">CPF da Mãe</label><input type="text" id="cpf_mae"
                             name="cpf_mae"></div>
 
-                    
+
 
                     <div class="md:col-span-3 mt-4">
                         <h3 class="text-lg font-semibold border-b pb-1">Financeiro (Geração de Mensalidades)</h3>
@@ -354,7 +357,7 @@
 
 
         </div>
-        
+
     </div>
     </div>
 
@@ -365,7 +368,7 @@
     <script>
 
 
-       
+
 
 
         const API_BASE_URL_ALUNOS = 'http://localhost/Sistema/api/alunos';
@@ -464,10 +467,10 @@
         alunoForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-             // --- LÓGICA DO LOADER DE BOTÃO ---
+            // --- LÓGICA DO LOADER DE BOTÃO ---
             const submitButton = alunoForm.querySelector('button[type="submit"]');
             const originalButtonContent = submitButton.innerHTML; // Salva o texto original
-            
+
             // Ativa o estado de carregamento
             submitButton.disabled = true;
             submitButton.innerHTML = `<div class="btn-spinner"></div> Salvando...`;
@@ -546,7 +549,7 @@
 
             // Obter a role do usuário do localStorage
             const userRole = localStorage.getItem('user_role'); //
-            
+
             try {
                 const response = await fetch(url, { headers: { 'Authorization': `Bearer ${localStorage.getItem('jwt_token')}` } });
                 if (!response.ok) throw new Error('Falha ao carregar alunos.');
@@ -585,8 +588,8 @@
                 } else {
                     alunosTableBody.innerHTML = '<tr><td colspan="6" class="text-center p-4">Nenhum aluno encontrado.</td></tr>';
                 }
-            } catch (error) { 
-                displayMessage(error.message, 'error'); 
+            } catch (error) {
+                displayMessage(error.message, 'error');
             } finally {
                 hideLoader(); // ESCONDE o loader no final, ocorrendo erro ou nã
             }
